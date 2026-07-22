@@ -9,13 +9,14 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #f0f2f5; }
         
-        header { background: #0056b3; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px; }
-        header h1 { font-size: 20px; }
+        header { background: #ffffff; color: #0056b3; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px; }
+        .logo-img { height: 40px; display: block; object-fit: contain; }
+        
         nav { display: flex; gap: 8px; flex-wrap: wrap; }
-        nav a { color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.15); font-size: 13px; font-weight: bold; transition: background 0.2s; }
-        nav a:hover, nav a.active { background: white; color: #0056b3; }
+        nav a { color: #0056b3; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        nav a:hover, nav a.active { background: #0056b3; color: white; }
 
-        .container { display: flex; flex-direction: column; height: calc(100vh - 60px); }
+        .container { display: flex; flex-direction: column; height: calc(100vh - 65px); }
         #map { height: 40vh; width: 100%; }
         
         .panel { height: 60vh; overflow-y: auto; padding: 20px; background: white; border-radius: 20px 20px 0 0; margin-top: -15px; z-index: 1000; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
@@ -31,7 +32,6 @@
         .price { font-weight: bold; color: #28a745; font-size: 16px; text-align: right; }
         .btn-rent { background: #0056b3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-weight: bold; }
 
-        /* Estilos Ventana Emergente (Modal) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-content h3 { color: #0056b3; margin-bottom: 15px; }
@@ -45,7 +45,7 @@
 <body>
 
 <header>
-    <h1>📍 C.A.R.E.M.E.D</h1>
+    <img src="/logo.png" alt="CAREMED Logo" class="logo-img">
     <nav>
         <a href="/" class="active">🩺 Pacientes</a>
         <a href="/proveedor.html">🏬 Proveedores</a>
@@ -74,7 +74,6 @@
     </div>
 </div>
 
-<!-- Modal para datos del paciente -->
 <div id="modal-renta" class="modal">
     <div class="modal-content">
         <h3>📋 Datos de Contacto para Renta</h3>
