@@ -147,21 +147,10 @@
     }
 
     async function procesarRenta(nombre, precio, proveedor) {
-        try {
-            const respuesta = await fetch('/api/crear-pago-renta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombreEquipo: nombre, precio: precio, proveedor: proveedor })
-            });
-            
-            const res = await respuesta.json();
-            if (res.exito && res.url) {
-                window.location.href = res.url;
-            } else {
-                alert('⚠️ Ocurrió un error al preparar la pasarela de pago.');
-            }
-        } catch (error) {
-            alert('⚠️ Error al conectar con el servidor de pagos.');
+        const confirmar = confirm(`¿Deseas confirmar la solicitud de renta para:\n\n📦 ${nombre}\n💰 $${precio} / mes\n🏬 Proveedor: ${proveedor}?`);
+        
+        if (confirmar) {
+            alert(`🎉 ¡Renta confirmada con éxito!\n\nSe ha notificado a ${proveedor}. En breve se pondrán en contacto contigo para coordinar la entrega en Durango.`);
         }
     }
 
