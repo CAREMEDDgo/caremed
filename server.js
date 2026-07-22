@@ -71,6 +71,17 @@ app.post('/api/equipos', async (req, res) => {
     }
 });
 
+// API: Eliminar Equipo (Función Administrador)
+app.delete('/api/equipos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM equipos_medicos WHERE id = $1', [id]);
+        res.json({ exito: true, mensaje: 'Equipo eliminado correctamente' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // API: Guardar Solicitud de Paciente
 app.post('/api/solicitudes', async (req, res) => {
     const { equipo, precio, proveedor, paciente, telefono, direccion } = req.body;
