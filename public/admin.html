@@ -3,94 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.R.E.M.E.D. - Panel de Administración</title>
+    <title>C.A.R.E.M.E.D. - Panel Administración</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background: #1a202c; color: #e2e8f0; padding: 30px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #2d3748; padding-bottom: 15px; }
+        body { background: #f0f2f5; }
         
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: #2d3748; padding: 20px; border-radius: 10px; border-left: 5px solid #319795; }
-        .stat-card h3 { font-size: 14px; color: #a0aec0; margin-bottom: 8px; }
-        .stat-card p { font-size: 28px; font-weight: bold; color: #319795; }
+        header { background: #0056b3; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px; }
+        header h1 { font-size: 20px; }
+        nav { display: flex; gap: 8px; }
+        nav a { color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.15); font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        nav a:hover, nav a.active { background: white; color: #0056b3; }
 
-        /* Tables */
-        .card-table { background: #2d3748; padding: 20px; border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: left; }
-        th, td { padding: 12px; border-bottom: 1px solid #4a5568; }
-        th { color: #a0aec0; }
-        .btn-verify { background: #38a169; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        
-        a { color: #319795; text-decoration: none; font-weight: bold; }
+        .container { max-width: 900px; margin: 30px auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        h2 { color: #0056b3; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; font-size: 14px; }
+        th { background: #0056b3; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
     </style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>🛡️ C.A.R.E.M.E.D. Admin Central</h1>
-        <p>Control General de Operaciones Durango</p>
-    </div>
-    <a href="/">← Volver al Portal Paciente</a>
+    <h1>📍 C.A.R.E.M.E.D</h1>
+    <nav>
+        <a href="/">🩺 Pacientes</a>
+        <a href="/proveedor.html">🏬 Proveedores</a>
+        <a href="/admin.html" class="active">🛡️ Administración</a>
+    </nav>
 </header>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <h3>EQUIPOS ACTIVOS EN DURANGO</h3>
-        <p id="total-equipos">0</p>
+<div class="container">
+    <div class="card">
+        <h2>🛡️ Panel General de Control y Auditoría</h2>
+        <p>Inventario general de equipos en Durango guardados en PostgreSQL:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Equipo</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Proveedor</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body">
+                <tr><td colspan="5">Cargando datos...</td></tr>
+            </tbody>
+        </table>
     </div>
-    <div class="stat-card" style="border-color: #3182ce;">
-        <h3>INGRESOS RECURRENTES ESTIMADOS (MRR)</h3>
-        <p style="color: #3182ce;">$24,500 MXN</p>
-    </div>
-    <div class="stat-card" style="border-color: #d69e2e;">
-        <h3>PROVEEDORES PENDIENTES COFEPRIS</h3>
-        <p style="color: #d69e2e;">1 Por Verificar</p>
-    </div>
-</div>
-
-<div class="card-table">
-    <h2>Catálogo General y Validación Sanitaria</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Equipo Médicos</th>
-                <th>Categoría</th>
-                <th>Proveedor</th>
-                <th>Renta/Mes</th>
-                <th>Estatus COFEPRIS</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-admin">
-            <!-- Datos cargados dinámicamente -->
-        </tbody>
-    </table>
 </div>
 
 <script>
     async function cargarAdmin() {
-        const res = await fetch('/api/equipos');
-        const json = await res.json();
-        const equipos = json.data || json;
+        const tbody = document.getElementById('tabla-body');
+        try {
+            const res = await fetch('/api/equipos');
+            const data = await res.json();
+            const equipos = data.data || data;
 
-        document.getElementById('total-equipos').innerText = equipos.length;
-        const tabla = document.getElementById('tabla-admin');
-        tabla.innerHTML = '';
-
-        equipos.forEach(item => {
-            tabla.innerHTML += `
-                <tr>
-                    <td>#${item.id}</td>
-                    <td><strong>${item.nombre}</strong></td>
-                    <td>${item.categoria}</td>
-                    <td>${item.proveedor}</td>
-                    <td>$${item.precio} MXN</td>
-                    <td><button class="btn-verify" onclick="alert('Verificación de RFC y Licencia Sanitaria aprobada.')">Verificado ✓</button></td>
-                </tr>
-            `;
-        });
+            tbody.innerHTML = '';
+            equipos.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>#${item.id}</strong></td>
+                        <td>${item.nombre}</td>
+                        <td>${item.categoria}</td>
+                        <td>$${item.precio}</td>
+                        <td>${item.proveedor}</td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error al cargar registros.</td></tr>';
+        }
     }
 
     cargarAdmin();
