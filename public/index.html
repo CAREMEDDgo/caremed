@@ -9,10 +9,9 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #f0f2f5; }
         
-        /* Encabezado y Menú Superior */
         header { background: #0056b3; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px; }
-        header h1 { font-size: 20px; display: flex; align-items: center; gap: 8px; }
-        nav { display: flex; gap: 8px; }
+        header h1 { font-size: 20px; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
         nav a { color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.15); font-size: 13px; font-weight: bold; transition: background 0.2s; }
         nav a:hover, nav a.active { background: white; color: #0056b3; }
 
@@ -31,6 +30,16 @@
         .card p { color: #666; font-size: 13px; }
         .price { font-weight: bold; color: #28a745; font-size: 16px; text-align: right; }
         .btn-rent { background: #0056b3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-weight: bold; }
+
+        /* Estilos Ventana Emergente (Modal) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-content h3 { color: #0056b3; margin-bottom: 15px; }
+        .modal-content label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-top: 10px; }
+        .modal-content input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-confirm { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-cancel { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
     </style>
 </head>
 <body>
@@ -40,6 +49,7 @@
     <nav>
         <a href="/" class="active">🩺 Pacientes</a>
         <a href="/proveedor.html">🏬 Proveedores</a>
+        <a href="/solicitudes.html">📋 Solicitudes</a>
         <a href="/admin.html">🛡️ Administración</a>
     </nav>
 </header>
@@ -64,6 +74,29 @@
     </div>
 </div>
 
+<!-- Modal para datos del paciente -->
+<div id="modal-renta" class="modal">
+    <div class="modal-content">
+        <h3>📋 Datos de Contacto para Renta</h3>
+        <p id="modal-equipo-info" style="font-size: 13px; color: #555; margin-bottom: 10px;"></p>
+        <form id="form-paciente">
+            <label>Nombre Completo</label>
+            <input type="text" id="paciente-nombre" placeholder="Ej. Maria López" required>
+
+            <label>Teléfono de Contacto (WhatsApp)</label>
+            <input type="tel" id="paciente-telefono" placeholder="Ej. 618 123 4567" required>
+
+            <label>Dirección de Entrega en Durango</label>
+            <input type="text" id="paciente-direccion" placeholder="Ej. Col. Centro, Calle Hidalgo #123" required>
+
+            <div class="modal-btns">
+                <button type="submit" class="btn-confirm"> Confirmar y Enviar</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const map = L.map('map').setView([24.0277, -104.6532], 13);
@@ -72,6 +105,7 @@
     L.marker([24.0277, -104.6532]).addTo(map).bindPopup('<b>Tu Ubicación Actual</b>').openPopup();
 
     let todosLosEquipos = [];
+    let equipoSeleccionado = null;
     let categoriaSeleccionada = 'Todas';
     let MarcadoresEnMapa = [];
 
@@ -79,31 +113,25 @@
         const contenedor = document.getElementById('lista-equipos');
         try {
             const respuesta = await fetch('/api/equipos');
-            if (!respuesta.ok) throw new Error('Error al conectar con la API');
-            
             const json = await respuesta.json();
             todosLosEquipos = json.data || json;
-
             renderizarVista(todosLosEquipos);
         } catch (error) {
-            console.error("Error al cargar equipos:", error);
-            contenedor.innerHTML = `<p style="color: red;">⚠️ Error al cargar el catálogo: ${error.message}</p>`;
+            contenedor.innerHTML = `<p style="color: red;">⚠️ Error al cargar el catálogo.</p>`;
         }
     }
 
     function renderizarVista(lista) {
         const contenedor = document.getElementById('lista-equipos');
-        
         MarcadoresEnMapa.forEach(m => map.removeLayer(m));
         MarcadoresEnMapa = [];
 
         if (!lista || lista.length === 0) {
-            contenedor.innerHTML = '<p style="color:#777; text-align:center; padding: 20px;">No se encontraron equipos coincidentes.</p>';
+            contenedor.innerHTML = '<p style="color:#777; text-align:center; padding: 20px;">No se encontraron equipos.</p>';
             return;
         }
 
         contenedor.innerHTML = '';
-
         lista.forEach(item => {
             if (item.lat && item.lng) {
                 const marker = L.marker([item.lat, item.lng]).addTo(map)
@@ -120,22 +148,61 @@
                     </div>
                     <div>
                         <div class="price">$${item.precio} / mes</div>
-                        <button class="btn-rent" onclick="procesarRenta('${item.nombre}', ${item.precio}, '${item.proveedor}')">Rentar Ahora</button>
+                        <button class="btn-rent" onclick="abrirModal('${item.nombre}', ${item.precio}, '${item.proveedor}')">Rentar Ahora</button>
                     </div>
                 </div>
             `;
         });
     }
 
+    function abrirModal(nombre, precio, proveedor) {
+        equipoSeleccionado = { nombre, precio, proveedor };
+        document.getElementById('modal-equipo-info').innerText = `Equipo: ${nombre} ($${precio}/mes) - ${proveedor}`;
+        document.getElementById('modal-renta').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-renta').style.display = 'none';
+        document.getElementById('form-paciente').reset();
+    }
+
+    document.getElementById('form-paciente').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const solicitud = {
+            equipo: equipoSeleccionado.nombre,
+            precio: equipoSeleccionado.precio,
+            proveedor: equipoSeleccionado.proveedor,
+            paciente: document.getElementById('paciente-nombre').value,
+            telefono: document.getElementById('paciente-telefono').value,
+            direccion: document.getElementById('paciente-direccion').value
+        };
+
+        try {
+            const res = await fetch('/api/solicitudes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(solicitud)
+            });
+
+            if (res.ok) {
+                alert(`🎉 ¡Solicitud recibida con éxito!\n\n${solicitud.proveedor} se comunicará al ${solicitud.telefono} para entregar el equipo en: ${solicitud.direccion}.`);
+                cerrarModal();
+            } else {
+                alert('⚠️ Error al registrar solicitud.');
+            }
+        } catch (err) {
+            alert('⚠️ Ocurrió un error al conectar con el servidor.');
+        }
+    });
+
     function filtrarEquipos() {
         const texto = document.getElementById('input-buscar').value.toLowerCase();
-        
         const filtrados = todosLosEquipos.filter(item => {
             const coincideTexto = item.nombre.toLowerCase().includes(texto) || item.proveedor.toLowerCase().includes(texto);
             const coincideCategoria = (categoriaSeleccionada === 'Todas') || (item.categoria === categoriaSeleccionada);
             return coincideTexto && coincideCategoria;
         });
-
         renderizarVista(filtrados);
     }
 
@@ -144,14 +211,6 @@
         document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
         elemento.classList.add('active');
         filtrarEquipos();
-    }
-
-    async function procesarRenta(nombre, precio, proveedor) {
-        const confirmar = confirm(`¿Deseas confirmar la solicitud de renta para:\n\n📦 ${nombre}\n💰 $${precio} / mes\n🏬 Proveedor: ${proveedor}?`);
-        
-        if (confirmar) {
-            alert(`🎉 ¡Renta confirmada con éxito!\n\nSe ha notificado a ${proveedor}. En breve se pondrán en contacto contigo para coordinar la entrega en Durango.`);
-        }
     }
 
     cargarEquipos();

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.R.E.M.E.D. - Solicitudes de Renta</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: #f0f2f5; }
+        
+        header { background: #0056b3; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px; }
+        header h1 { font-size: 20px; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        nav a { color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.15); font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        nav a:hover, nav a.active { background: white; color: #0056b3; }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        h2 { color: #0056b3; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; font-size: 13px; }
+        th { background: #0056b3; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .btn-whatsapp { background: #25d366; color: white; text-decoration: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📍 C.A.R.E.M.E.D</h1>
+    <nav>
+        <a href="/">🩺 Pacientes</a>
+        <a href="/proveedor.html">🏬 Proveedores</a>
+        <a href="/solicitudes.html" class="active">📋 Solicitudes</a>
+        <a href="/admin.html">🛡️ Administración</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>📋 Central de Solicitudes y Rentas Activas</h2>
+        <p>Aquí se concentran los datos de contacto enviados por los pacientes para coordinar la entrega:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Equipo</th>
+                    <th>Paciente</th>
+                    <th>Teléfono</th>
+                    <th>Dirección en Durango</th>
+                    <th>Proveedor</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-solicitudes">
+                <tr><td colspan="7">Cargando solicitudes...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    async function cargarSolicitudes() {
+        const tbody = document.getElementById('tabla-solicitudes');
+        try {
+            const res = await fetch('/api/solicitudes');
+            const data = await res.json();
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No hay solicitudes registradas aún.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.reverse().forEach(s => {
+                const numLimpio = s.telefono.replace(/\D/g,'');
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${new Date(s.fecha).toLocaleDateString()}</td>
+                        <td><strong>${s.equipo}</strong> ($${s.precio}/mes)</td>
+                        <td>${s.paciente}</td>
+                        <td>${s.telefono}</td>
+                        <td>${s.direccion}</td>
+                        <td>${s.proveedor}</td>
+                        <td>
+                            <a href="https://wa.me/52${numLimpio}?text=Hola%20${s.paciente},%20te%20contacto%20de%20C.A.R.E.M.E.D.%20por%20tu%20solicitud%20del%20equipo:%20${s.equipo}" target="_blank" class="btn-whatsapp">📲 WhatsApp</a>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="7" style="color:red;">Error al cargar las solicitudes.</td></tr>';
+        }
+    }
+
+    cargarSolicitudes();
+</script>
+
+</body>
+</html>
