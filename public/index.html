@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.R.E.M.E.D. - Equipo Médico en Durango</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: #f0f2f5; }
+        header { background: #0056b3; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header h1 { font-size: 20px; }
+        .container { display: flex; flex-direction: column; height: calc(100vh - 55px); }
+        #map { height: 40vh; width: 100%; }
+        
+        /* Contenedor del Panel y Buscador */
+        .panel { height: 60vh; overflow-y: auto; padding: 20px; background: white; border-radius: 20px 20px 0 0; margin-top: -15px; z-index: 1000; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
+        
+        /* Buscador y Filtros */
+        .search-container { margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .search-bar { width: 100%; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
+        .filter-tags { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+        .tag-btn { background: #e9ecef; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .tag-btn.active { background: #0056b3; color: white; font-weight: bold; }
+
+        /* Tarjetas de producto */
+        .card { border: 1px solid #e0e0e0; padding: 15px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .card h3 { color: #0056b3; font-size: 16px; margin-bottom: 4px; }
+        .card p { color: #666; font-size: 13px; }
+        .price { font-weight: bold; color: #28a745; font-size: 16px; text-align: right; }
+        .btn-rent { background: #0056b3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📍 C.A.R.E.M.E.D</h1>
+    <span>Victoria de Durango</span>
+</header>
+
+<div class="container">
+    <div id="map"></div>
+    <div class="panel">
+        <h2>Equipos Médicos Disponibles Cerca</h2>
+        <br>
+        
+        <!-- Controles de Búsqueda y Filtrado -->
+        <div class="search-container">
+            <input type="text" id="input-buscar" class="search-bar" placeholder="🔍 Buscar por nombre (ej. Concentrador, Silla...)" oninput="filtrarEquipos()">
+            <div class="filter-tags">
+                <button class="tag-btn active" onclick="seleccionarCategoria('Todas', this)">Todas</button>
+                <button class="tag-btn" onclick="seleccionarCategoria('Oxígeno', this)">Oxígenoterapia</button>
+                <button class="tag-btn" onclick="seleccionarCategoria('Movilidad', this)">Movilidad</button>
+                <button class="tag-btn" onclick="seleccionarCategoria('Camas', this)">Camas / Monitores</button>
+            </div>
+        </div>
+
+        <div id="lista-equipos">Cargando catálogo...</div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([24.0277, -104.6532], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+    L.marker([24.0277, -104.6532]).addTo(map).bindPopup('<b>Tu Ubicación Actual</b>').openPopup();
+
+    let todosLosEquipos = [];
+    let categoriaSeleccionada = 'Todas';
+    let MarcadoresEnMapa = [];
+
+    async function cargarEquipos() {
+        const contenedor = document.getElementById('lista-equipos');
+        try {
+            const respuesta = await fetch('/api/equipos');
+            if (!respuesta.ok) throw new Error('Error al conectar con la API');
+            
+            const json = await respuesta.json();
+            todosLosEquipos = json.data || json;
+
+            renderizarVista(todosLosEquipos);
+        } catch (error) {
+            console.error("Error al cargar equipos:", error);
+            contenedor.innerHTML = `<p style="color: red;">⚠️ Error al cargar el catálogo: ${error.message}</p>`;
+        }
+    }
+
+    function renderizarVista(lista) {
+        const contenedor = document.getElementById('lista-equipos');
+        
+        // Limpiar marcadores anteriores del mapa
+        MarcadoresEnMapa.forEach(m => map.removeLayer(m));
+        MarcadoresEnMapa = [];
+
+        if (!lista || lista.length === 0) {
+            contenedor.innerHTML = '<p style="color:#777; text-align:center; padding: 20px;">No se encontraron equipos coincidentes.</p>';
+            return;
+        }
+
+        contenedor.innerHTML = '';
+
+        lista.forEach(item => {
+            // Dibujar marcador en mapa
+            if (item.lat && item.lng) {
+                const marker = L.marker([item.lat, item.lng]).addTo(map)
+                    .bindPopup(`<b>${item.nombre}</b><br>Proveedor: ${item.proveedor}`);
+                MarcadoresEnMapa.push(marker);
+            }
+
+            // Renderizar tarjeta
+            contenedor.innerHTML += `
+                <div class="card">
+                    <div>
+                        <h3>${item.nombre}</h3>
+                        <p>Categoría: <strong>${item.categoria}</strong></p>
+                        <p>Proveedor: ${item.proveedor}</p>
+                    </div>
+                    <div>
+                        <div class="price">$${item.precio} / mes</div>
+                        <button class="btn-rent" onclick="procesarRenta('${item.nombre}', ${item.precio}, '${item.proveedor}')">Rentar Ahora</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function filtrarEquipos() {
+        const texto = document.getElementById('input-buscar').value.toLowerCase();
+        
+        const filtrados = todosLosEquipos.filter(item => {
+            const coincideTexto = item.nombre.toLowerCase().includes(texto) || item.proveedor.toLowerCase().includes(texto);
+            const coincideCategoria = (categoriaSeleccionada === 'Todas') || (item.categoria === categoriaSeleccionada);
+            return coincideTexto && coincideCategoria;
+        });
+
+        renderizarVista(filtrados);
+    }
+
+    function seleccionarCategoria(cat, elemento) {
+        categoriaSeleccionada = cat;
+        document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+        elemento.classList.add('active');
+        filtrarEquipos();
+    }
+
+    async function procesarRenta(nombre, precio, proveedor) {
+        try {
+            const respuesta = await fetch('/api/crear-pago-renta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombreEquipo: nombre, precio: precio, proveedor: proveedor })
+            });
+            
+            const res = await respuesta.json();
+            if (res.exito && res.url) {
+                // Redirige a la pantalla segura de cobro de Stripe
+                window.location.href = res.url;
+            } else {
+                alert('⚠️ Ocurrió un error al preparar la pasarela de pago.');
+            }
+        } catch (error) {
+            alert('⚠️ Error al conectar con el servidor de pagos.');
+        }
+    }
+
+    cargarEquipos();
+</script>
+
+</body>
+</html>

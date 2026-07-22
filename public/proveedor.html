@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.R.E.M.E.D. - Panel de Proveedor</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: #f8f9fa; display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: #0a2540; color: white; padding: 20px; }
+        .sidebar h2 { color: #00d4b2; font-size: 22px; margin-bottom: 30px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { padding: 12px 10px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; background: #1a365d; color: #00d4b2; }
+
+        /* Main Content */
+        .main { flex: 1; padding: 30px; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .badge-plan { background: #e2e8f0; color: #0a2540; padding: 6px 12px; border-radius: 20px; font-weight: bold; }
+
+        /* Cards & Forms */
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .btn-primary { background: #0056b3; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        /* Links de navegación rápidos */
+        .nav-links { margin-bottom: 20px; }
+        .nav-links a { text-decoration: none; color: #0056b3; font-weight: bold; margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>C.A.R.E.M.E.D</h2>
+    <ul>
+        <li>📦 Mi Inventario</li>
+    </ul>
+</div>
+
+<div class="main">
+    <div class="nav-links">
+        <a href="/">← Ir a Vista de Paciente</a>
+        <a href="/admin.html">Ir a Vista Administrador →</a>
+    </div>
+
+    <div class="header-panel">
+        <h1>Gestión de Inventario Médico</h1>
+        <span class="badge-plan">Plan: Proveedor Premium ($1,499/mes)</span>
+    </div>
+
+    <!-- Formulario para publicar nuevo equipo -->
+    <div class="card">
+        <h3>Publicar Nuevo Equipo para Renta/Venta en Durango</h3>
+        <br>
+        <form id="form-publicar">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Nombre del Equipo</label>
+                    <input type="text" id="nombre" placeholder="Ej. Tanque de Oxígeno 680L" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="categoria" required>
+                        <option value="Oxígeno">Oxígenoterapia</option>
+                        <option value="Movilidad">Movilidad</option>
+                        <option value="Camas">Camas / Monitores</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Precio Renta Mensual ($ MXN)</label>
+                    <input type="number" id="precio" placeholder="1200" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de la Casa Médica / Empresa</label>
+                    <input type="text" id="proveedor" placeholder="Ej. MediRent Durango" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Añadir al Catálogo General</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('form-publicar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const nuevoEquipo = {
+            nombre: document.getElementById('nombre').value,
+            categoria: document.getElementById('categoria').value,
+            precio: document.getElementById('precio').value,
+            proveedor: document.getElementById('proveedor').value
+        };
+
+        const respuesta = await fetch('/api/equipos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoEquipo)
+        });
+
+        const res = await respuesta.json();
+        if (res.exito) {
+            alert('✅ ¡Equipo agregado con éxito! Ya está disponible en el mapa para los pacientes.');
+            document.getElementById('form-publicar').reset();
+        } else {
+            alert('⚠️ Ocurrió un error al guardar.');
+        }
+    });
+</script>
+
+</body>
+</html>
