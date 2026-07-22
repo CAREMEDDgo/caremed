@@ -10,17 +10,20 @@
         
         header { background: #0056b3; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px; }
         header h1 { font-size: 20px; }
-        nav { display: flex; gap: 8px; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
         nav a { color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.15); font-size: 13px; font-weight: bold; transition: background 0.2s; }
         nav a:hover, nav a.active { background: white; color: #0056b3; }
 
-        .container { max-width: 900px; margin: 30px auto; padding: 20px; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 20px; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         h2 { color: #0056b3; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; font-size: 14px; }
         th { background: #0056b3; color: white; }
         tr:nth-child(even) { background: #f9f9f9; }
+        
+        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; transition: background 0.2s; }
+        .btn-delete:hover { background: #bd2130; }
     </style>
 </head>
 <body>
@@ -30,6 +33,7 @@
     <nav>
         <a href="/">🩺 Pacientes</a>
         <a href="/proveedor.html">🏬 Proveedores</a>
+        <a href="/solicitudes.html">📋 Solicitudes</a>
         <a href="/admin.html" class="active">🛡️ Administración</a>
     </nav>
 </header>
@@ -37,7 +41,7 @@
 <div class="container">
     <div class="card">
         <h2>🛡️ Panel General de Control y Auditoría</h2>
-        <p>Inventario general de equipos en Durango guardados en PostgreSQL:</p>
+        <p>Inventario general de equipos en Durango. Puedes eliminar publicaciones que no cumplan con las políticas:</p>
         
         <table>
             <thead>
@@ -47,10 +51,11 @@
                     <th>Categoría</th>
                     <th>Precio</th>
                     <th>Proveedor</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-body">
-                <tr><td colspan="5">Cargando datos...</td></tr>
+                <tr><td colspan="6">Cargando datos...</td></tr>
             </tbody>
         </table>
     </div>
@@ -64,6 +69,11 @@
             const data = await res.json();
             const equipos = data.data || data;
 
+            if (!equipos || equipos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay equipos registrados en el sistema.</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = '';
             equipos.forEach(item => {
                 tbody.innerHTML += `
@@ -73,11 +83,35 @@
                         <td>${item.categoria}</td>
                         <td>$${item.precio}</td>
                         <td>${item.proveedor}</td>
+                        <td>
+                            <button class="btn-delete" onclick="eliminarEquipo(${item.id}, '${item.nombre}')">🗑️ Eliminar</button>
+                        </td>
                     </tr>
                 `;
             });
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error al cargar registros.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="color:red;">Error al cargar registros.</td></tr>';
+        }
+    }
+
+    async function eliminarEquipo(id, nombre) {
+        const confirmar = confirm(`¿Estás seguro de que deseas eliminar "${nombre}" del catálogo general?\n\nEsta acción quitará el equipo del mapa y del catálogo de los pacientes de forma permanente.`);
+        
+        if (confirmar) {
+            try {
+                const respuesta = await fetch(`/api/equipos/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (respuesta.ok) {
+                    alert('✅ Equipo eliminado exitosamente.');
+                    cargarAdmin(); // Recargar la tabla automáticamente
+                } else {
+                    alert('⚠️ No se pudo eliminar el equipo.');
+                }
+            } catch (error) {
+                alert('⚠️ Error de conexión al intentar eliminar.');
+            }
         }
     }
 
