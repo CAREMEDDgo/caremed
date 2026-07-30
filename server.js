@@ -74,7 +74,6 @@ async function inicializarEstructura() {
         await pool.query(`
             DO $$ 
             BEGIN 
-                -- Quitar restriccion NOT NULL o borrar columna obsoleta mes_programado si existe
                 IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='mes_programado') THEN
                     ALTER TABLE citas_estudios ALTER COLUMN mes_programado DROP NOT NULL;
                 END IF;
@@ -114,7 +113,7 @@ async function inicializarEstructura() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL reconfigurada (desactivado NOT NULL de mes_programado).");
+        console.log("⚡ Base de datos PostgreSQL inicializada.");
     } catch (err) {
         console.error("Error al inicializar PostgreSQL:", err);
     }
@@ -177,6 +176,15 @@ app.post('/api/empresas/suscripcion', async (req, res) => {
             [empresa_nombre, contacto_nombre, correo, telefono, plan_empresa, visitas_garantizadas, parseFloat(monto)]
         );
         res.json({ exito: true, empresa: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/empresa/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM convenios_empresas WHERE id = $1', [req.params.id]);
+        res.json({ exito: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -29,7 +29,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
         th { background: #0056b3; color: white; }
-        .btn-del { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .btn-del { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -76,6 +76,8 @@
                     <th>Plan Contratado</th>
                     <th>Visitas Garantizadas</th>
                     <th>Monto Mensual</th>
+                    <th>Fecha Alta</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody id="tabla-empresas"></tbody>
@@ -94,6 +96,7 @@
                     <th>Plan</th>
                     <th>Modalidad</th>
                     <th>Monto Pagado</th>
+                    <th>Fecha Alta</th>
                     <th>Acción</th>
                 </tr>
             </thead>
@@ -129,6 +132,12 @@
         }
     }
 
+    function formatearFecha(fechaStr) {
+        if (!fechaStr) return 'N/A';
+        const d = new Date(fechaStr);
+        return d.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
     async function cargarAdmin() {
         const res = await fetch('/api/admin/resumen');
         const data = await res.json();
@@ -150,7 +159,7 @@
         }
         document.getElementById('kpi-ingresos-empresas').innerText = `$${totalEmpresas.toLocaleString()} MXN`;
 
-        // Tabla Empresas
+        // Tabla Empresas con Botón Borrar y Fecha
         const tbodyEmp = document.getElementById('tabla-empresas');
         tbodyEmp.innerHTML = '';
         if (data.empresas && data.empresas.length > 0) {
@@ -163,14 +172,16 @@
                         <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${e.plan_empresa}</span></td>
                         <td><strong>${e.visitas_garantizadas} visitas/mes</strong></td>
                         <td><strong style="color:#28a745;">$${parseFloat(e.monto).toLocaleString()} MXN</strong></td>
+                        <td>${formatearFecha(e.fecha_registro)}</td>
+                        <td><button class="btn-del" onclick="eliminarEmpresa(${e.id})">🗑️ Borrar</button></td>
                     </tr>
                 `;
             });
         } else {
-            tbodyEmp.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay convenios empresariales registrados aún.</td></tr>';
+            tbodyEmp.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay convenios empresariales registrados aún.</td></tr>';
         }
 
-        // Tabla Suscriptores
+        // Tabla Suscriptores con Fecha
         const tbodySub = document.getElementById('tabla-suscriptores');
         tbodySub.innerHTML = '';
         if (data.suscriptores && data.suscriptores.length > 0) {
@@ -184,12 +195,13 @@
                         <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${s.plan}</span></td>
                         <td>${s.modalidad_pago || 'Anual'}</td>
                         <td><strong>$${(parseFloat(s.monto) || 0).toLocaleString()} MXN</strong></td>
+                        <td>${formatearFecha(s.fecha_inicio)}</td>
                         <td><button class="btn-del" onclick="eliminarSuscripcion(${s.id})">🗑️ Borrar</button></td>
                     </tr>
                 `;
             });
         } else {
-            tbodySub.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
+            tbodySub.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
         }
 
         // Tabla Comisiones
@@ -213,6 +225,13 @@
     async function eliminarSuscripcion(id) {
         if (confirm("¿Estás seguro de eliminar este usuario?")) {
             await fetch(`/api/admin/suscripcion/${id}`, { method: 'DELETE' });
+            cargarAdmin();
+        }
+    }
+
+    async function eliminarEmpresa(id) {
+        if (confirm("¿Estás seguro de eliminar este convenio empresarial?")) {
+            await fetch(`/api/admin/empresa/${id}`, { method: 'DELETE' });
             cargarAdmin();
         }
     }
