@@ -20,7 +20,6 @@
 
         .container { max-width: 1100px; margin: -30px auto 40px auto; padding: 0 20px; z-index: 10; position: relative; }
         
-        /* Toggle Anual / Mensual */
         .toggle-container { text-align: center; margin-bottom: 25px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .toggle-btn { background: #eef5ff; color: #0056b3; border: 1px solid #0056b3; padding: 8px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; margin: 0 5px; transition: 0.2s; }
         .toggle-btn.active { background: #0056b3; color: white; }
@@ -39,7 +38,6 @@
         
         .btn-subscribe { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* Calendario Anual por Género */
         .schedule-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .gender-selector { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
         .btn-gender { padding: 8px 20px; border-radius: 20px; border: 1px solid #ccc; background: #f8f9fa; cursor: pointer; font-weight: bold; }
@@ -49,14 +47,12 @@
         .month-box { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; font-size: 13px; }
         .month-name { font-weight: bold; color: #0056b3; display: block; margin-bottom: 3px; }
 
-        /* Estudios Individuales */
         .single-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .table-single { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .table-single th, .table-single td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
         .table-single th { background: #0056b3; color: white; }
         .btn-buy-single { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
         .modal-content label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-top: 10px; }
@@ -73,7 +69,6 @@
     <nav>
         <a href="/" class="active">💳 Membresías y Tienda</a>
         <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
-        <a href="/admin.html">🛡️ Administración B2B</a>
     </nav>
 </header>
 
@@ -84,14 +79,12 @@
 
 <div class="container">
     
-    <!-- Modalidad de Pago -->
     <div class="toggle-container">
         <span>Selecciona la Modalidad de Pago: </span>
         <button class="toggle-btn active" id="btn-pago-anual" onclick="cambiarModalidad('Anual')">Pago Anual (Ahorras más)</button>
         <button class="toggle-btn" id="btn-pago-mensual" onclick="cambiarModalidad('Mensual')">Pago Mensual</button>
     </div>
 
-    <!-- Planes de Membresía -->
     <div class="plans-grid">
         <div class="plan-card">
             <div>
@@ -137,7 +130,6 @@
         </div>
     </div>
 
-    <!-- Calendario de Estudios Preventivos Separado por Sexo -->
     <div class="schedule-section">
         <h2 style="text-align: center; color: #0056b3;">📅 Programa Anual de Estudios Preventivos</h2>
         <div class="gender-selector">
@@ -145,12 +137,9 @@
             <button class="btn-gender" id="btn-mujer" onclick="cambiarGenero('Mujer')">👩🏻 Ver Programa Mujer</button>
         </div>
         
-        <div class="schedule-grid" id="grid-estudios">
-            <!-- Carga dinámica -->
-        </div>
+        <div class="schedule-grid" id="grid-estudios"></div>
     </div>
 
-    <!-- Compra de Estudios Individuales (Sin Membresía) -->
     <div class="single-section">
         <h2 style="text-align: center; color: #0056b3;">🛒 Comprar Estudios Individuales (A la carta)</h2>
         <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Si solo necesitas un estudio específico, cómpralo desde la app con descuento preferencial:</p>
@@ -303,7 +292,7 @@
     async function comprarEstudioIndividual(estudio, precio) {
         const paciente = prompt(`Estudio: ${estudio}\nPrecio App: $${precio} MXN\n\nIngresa tu Nombre Completo para generar la orden:`);
         if (paciente) {
-            const clinica = prompt(`Selecciona Clínica o Laboratorio (ej. Salud Digna, Laboratorio Chopo, Del Guadiana):`, "Salud Digna Durango");
+            const clinica = prompt(`Selecciona Clínica o Laboratorio:`, "Salud Digna Durango");
             const res = await fetch('/api/citas/agendar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -318,7 +307,7 @@
             });
             const json = await res.json();
             if (res.ok) {
-                alert(`✅ ¡Estudio Individual Comprado!\n\nTu Código QR de Atención es: ${json.cita.codigo_qr}.\nPreséntalo en ${clinica} para realizar tu estudio.`);
+                alert(`✅ ¡Estudio Comprado!\n\nTu Código QR es: ${json.cita.codigo_qr}.\nPreséntalo en ${clinica} para realizar tu estudio.`);
             }
         }
     }

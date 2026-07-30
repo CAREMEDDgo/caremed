@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.R.E.M.E.D. - Panel B2B y Comisiones</title>
+    <title>C.A.R.E.M.E.D. - Administrador B2B</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #f4f7f9; color: #333; }
         
-        header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
+        header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
         .logo-img { height: 42px; object-fit: contain; }
-        nav { display: flex; gap: 8px; flex-wrap: wrap; }
-        nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; }
-        nav a:hover, nav a.active { background: #0056b3; color: white; }
 
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; display: none; }
         
+        /* Modal Login */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 3000; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .login-card input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; }
+        .login-card button { background: #0056b3; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
+
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #0056b3; }
-        .kpi-card.green { border-left-color: #28a745; }
-        .kpi-card.purple { border-left-color: #6f42c1; }
         .kpi-title { font-size: 12px; color: #777; font-weight: bold; text-transform: uppercase; }
         .kpi-value { font-size: 26px; font-weight: bold; color: #333; margin-top: 5px; }
 
@@ -29,62 +30,59 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
         th { background: #0056b3; color: white; }
-        tr:nth-child(even) { background: #f9f9f9; }
-        .comision-tag { color: #28a745; font-weight: bold; }
+        .btn-del { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
     </style>
 </head>
 <body>
 
+<!-- Login de Seguridad -->
+<div id="login-modal" class="login-overlay">
+    <div class="login-card">
+        <h3 style="color:#0056b3; margin-bottom: 5px;">🛡️ Acceso Restringido B2B</h3>
+        <p style="font-size: 12px; color: #666;">Ingresa la contraseña de administrador:</p>
+        <input type="password" id="admin-pass" placeholder="Contraseña admin">
+        <button onclick="validarAcceso()">Ingresar al Panel</button>
+    </div>
+</div>
+
 <header>
     <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
-    <nav>
-        <a href="/">💳 Membresías y Tienda</a>
-        <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
-        <a href="/admin.html" class="active">🛡️ Administración B2B</a>
-    </nav>
+    <a href="/" style="color: #0056b3; text-decoration: none; font-weight: bold; font-size: 13px;">← Volver al Sitio</a>
 </header>
 
-<div class="container">
+<div class="container" id="admin-content">
     
-    <!-- KPIs -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-title">Suscriptores Totales</div>
             <div class="kpi-value" id="kpi-usuarios">0</div>
         </div>
-        <div class="kpi-card green">
+        <div class="kpi-card">
             <div class="kpi-title">Ingresos Membresías</div>
             <div class="kpi-value" id="kpi-ingresos">$0 MXN</div>
         </div>
-        <div class="kpi-card purple">
+        <div class="kpi-card">
             <div class="kpi-title">Comisiones B2B por Cobrar</div>
             <div class="kpi-value" id="kpi-comisiones">$0 MXN</div>
         </div>
     </div>
 
-    <!-- CONCENTRADO B2B DE COMISIONES POR CLINICA -->
-    <div class="panel-card" style="border: 2px solid #28a745;">
+    <div class="panel-card">
         <h2>🏦 Concentrado B2B: Comisiones a Cobrar a Establecimientos</h2>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Monto exacto que cada clínica, laboratorio o hospital en Durango debe pagar a C.A.R.E.M.E.D. por canalización de pacientes:</p>
-        
         <table>
             <thead>
                 <tr>
                     <th>Establecimiento / Clínica</th>
                     <th>Pacientes Canalizados</th>
                     <th>Total Comisión a Facturar</th>
-                    <th>Estado de Cobro</th>
                 </tr>
             </thead>
-            <tbody id="tabla-comisiones">
-                <tr><td colspan="4" style="text-align:center;">Cargando comisiones...</td></tr>
-            </tbody>
+            <tbody id="tabla-comisiones"></tbody>
         </table>
     </div>
 
-    <!-- Tabla de Citas Generales -->
     <div class="panel-card">
-        <h2>📅 Registro de Citas y Compras Individuales</h2>
+        <h2>📅 Registro General de Citas y Cancelaciones</h2>
         <table>
             <thead>
                 <tr>
@@ -93,24 +91,33 @@
                     <th>Origen</th>
                     <th>Estudio</th>
                     <th>Clínica</th>
-                    <th>Comisión App</th>
                     <th>Código QR</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="tabla-citas-admin">
-                <tr><td colspan="7" style="text-align:center;">Cargando historial...</td></tr>
-            </tbody>
+            <tbody id="tabla-citas-admin"></tbody>
         </table>
     </div>
 
 </div>
 
 <script>
+    function validarAcceso() {
+        const pass = document.getElementById('admin-pass').value;
+        // Contraseña administrativa predeterminada
+        if (pass === 'caremed2026' || pass === '1234') {
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            cargarAdmin();
+        } else {
+            alert('⚠️ Contraseña incorrecta.');
+        }
+    }
+
     async function cargarAdmin() {
         const res = await fetch('/api/admin/resumen');
         const data = await res.json();
 
-        // KPIs
         document.getElementById('kpi-usuarios').innerText = data.suscriptores.length;
         const totalIngresos = data.suscriptores.reduce((sum, u) => sum + parseFloat(u.monto), 0);
         document.getElementById('kpi-ingresos').innerText = `$${totalIngresos.toLocaleString()} MXN`;
@@ -118,25 +125,18 @@
         const totalComisiones = data.citas.reduce((sum, c) => sum + parseFloat(c.comision_generada || 0), 0);
         document.getElementById('kpi-comisiones').innerText = `$${totalComisiones.toLocaleString()} MXN`;
 
-        // Tabla Comisiones
         const tbodyCom = document.getElementById('tabla-comisiones');
-        if (!data.comisiones || data.comisiones.length === 0) {
-            tbodyCom.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px;">Sin comisiones registradas aún.</td></tr>';
-        } else {
-            tbodyCom.innerHTML = '';
-            data.comisiones.forEach(com => {
-                tbodyCom.innerHTML += `
-                    <tr>
-                        <td><strong>${com.clinica}</strong></td>
-                        <td>${com.total_pacientes} pacientes</td>
-                        <td><span class="comision-tag">$${parseFloat(com.total_comision_a_cobrar).toFixed(2)} MXN</span></td>
-                        <td><span style="background:#e8f5e9; color:#28a745; padding:3px 8px; border-radius:10px; font-weight:bold; font-size:11px;">Pendiente Facturar</span></td>
-                    </tr>
-                `;
-            });
-        }
+        tbodyCom.innerHTML = '';
+        data.comisiones.forEach(com => {
+            tbodyCom.innerHTML += `
+                <tr>
+                    <td><strong>${com.clinica}</strong></td>
+                    <td>${com.total_pacientes} pacientes</td>
+                    <td><strong style="color:#28a745;">$${parseFloat(com.total_comision_a_cobrar).toFixed(2)} MXN</strong></td>
+                </tr>
+            `;
+        });
 
-        // Tabla Citas
         const tbodyCitas = document.getElementById('tabla-citas-admin');
         tbodyCitas.innerHTML = '';
         data.citas.forEach(c => {
@@ -144,17 +144,22 @@
                 <tr>
                     <td>${new Date(c.fecha_cita).toLocaleDateString()}</td>
                     <td>${c.paciente}</td>
-                    <td><strong style="color:${c.tipo_compra==='Individual'?'#fd7e14':'#0056b3'}">${c.tipo_compra}</strong></td>
+                    <td>${c.tipo_compra}</td>
                     <td>${c.estudio}</td>
                     <td>${c.clinica}</td>
-                    <td>$${parseFloat(c.comision_generada).toFixed(2)} MXN</td>
                     <td><code>${c.codigo_qr}</code></td>
+                    <td><button class="btn-del" onclick="eliminarCitaAdmin(${c.id})">🗑️ Eliminar</button></td>
                 </tr>
             `;
         });
     }
 
-    cargarAdmin();
+    async function eliminarCitaAdmin(idCita) {
+        if (confirm("¿Estás seguro de eliminar esta cita agendada por error?")) {
+            await fetch(`/api/citas/${idCita}`, { method: 'DELETE' });
+            cargarAdmin();
+        }
+    }
 </script>
 
 </body>
