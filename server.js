@@ -14,10 +14,9 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Inicializar la estructura completa de PostgreSQL desde cero
+// Inicialización de tablas y columnas con migración automática
 async function inicializarEstructura() {
     try {
-        // Borrar y recrear catálogo de clinicas si es necesario para sincronización limpia
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios_membresias (
                 id SERIAL PRIMARY KEY,
@@ -71,7 +70,25 @@ async function inicializarEstructura() {
             );
         `);
 
-        // Recargar el catálogo completo de establecimientos autorizados en Durango
+        // AGREGAR COLUMNAS FALTANTES A TABLAS EXISTENTES SI NO EXISTEN
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='tipo_compra') THEN
+                    ALTER TABLE citas_estudios ADD COLUMN tipo_compra VARCHAR(50) DEFAULT 'Membresia';
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='monto_pagado') THEN
+                    ALTER TABLE citas_estudios ADD COLUMN monto_pagado NUMERIC(10, 2) DEFAULT 0.00;
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='comision_generada') THEN
+                    ALTER TABLE citas_estudios ADD COLUMN comision_generada NUMERIC(10, 2) DEFAULT 0.00;
+                END IF;
+            END $$;
+        `);
+
+        // Recargar catálogo completo de clínicas y hospitales en Durango
         await pool.query('DELETE FROM clinicas_convenio');
         await pool.query(`
             INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
@@ -92,7 +109,7 @@ async function inicializarEstructura() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL inicializada con estructura limpia e impecable.");
+        console.log("⚡ Base de datos PostgreSQL inicializada con columnas de citas corregidas.");
     } catch (err) {
         console.error("Error al inicializar PostgreSQL:", err);
     }
@@ -174,13 +191,13 @@ app.get('/api/clinicas', async (req, res) => {
 app.post('/api/citas/agendar', async (req, res) => {
     const { usuario_id, paciente, tipo_compra, estudio, monto_pagado, clinica, fecha_cita } = req.body;
     const codigo_qr = 'CARE-' + Math.floor(100000 + Math.random() * 900000);
-    const comision = tipo_compra === 'Individual' ? (monto_pagado * 0.15) : 50.00;
+    const comision = tipo_compra === 'Individual' ? ((parseFloat(monto_pagado) || 0) * 0.15) : 50.00;
 
     try {
         const result = await pool.query(
             `INSERT INTO citas_estudios (usuario_id, paciente, tipo_compra, estudio, monto_pagado, clinica, comision_generada, codigo_qr, fecha_cita) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-            [usuario_id || null, paciente, tipo_compra, estudio, monto_pagado || 0, clinica, comision, codigo_qr, fecha_cita]
+            [usuario_id || null, paciente, tipo_compra || 'Membresia', estudio, monto_pagado || 0, clinica, comision, codigo_qr, fecha_cita]
         );
 
         if (tipo_compra === 'Membresia' && usuario_id) {
@@ -253,4 +270,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor C.A.R.E.M.E.D. corriendo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor C.A.R.E.M.E.D. activo en puerto ${PORT}`));
