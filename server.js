@@ -92,7 +92,7 @@ async function inicializarEstructura() {
             END $$;
         `);
 
-        // Recargar catálogo completo de clínicas y hospitales en Durango
+        // Recargar catálogo completo de clínicas y hospitales en Durango (sin Salud Digna)
         await pool.query('DELETE FROM clinicas_convenio');
         await pool.query(`
             INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
@@ -102,7 +102,6 @@ async function inicializarEstructura() {
             ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
             ('Laboratorio Clínico del Norte', 'Económico', 'Esencial', 'Blvd. Jose Maria Morelos, Durango', 24.0380, -104.6510, 15.00),
             ('Laboratorio del Centro', 'Económico', 'Esencial', 'Calle Constitución #210, Centro', 24.0260, -104.6670, 15.00),
-            ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
             ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
             ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
             ('Laboratorio del Lago', 'Medio', 'Plus', 'Fracc. Los Remedios, Durango', 24.0350, -104.6490, 12.00),
@@ -113,7 +112,7 @@ async function inicializarEstructura() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL inicializada.");
+        console.log("⚡ Base de datos PostgreSQL inicializada (Removido Salud Digna).");
     } catch (err) {
         console.error("Error al inicializar PostgreSQL:", err);
     }
