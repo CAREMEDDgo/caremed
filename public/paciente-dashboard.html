@@ -182,11 +182,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     let usuarioActualId = localStorage.getItem('caremed_user_id');
-    let nombreUsuario = '';
+    let nombreUsuario = 'Paciente Registrado';
     let map = null;
     let markersGroup = L.layerGroup();
 
-    // Catálogo Base Fallback en caso de latencia de red
     const clinicasBase = [
         { nombre: "Laboratorio Gutiérrez", categoria: "Económico", direccion: "Zona Centro, Durango", lat: 24.0250, lng: -104.6680 },
         { nombre: "Laboratorio San José", categoria: "Económico", direccion: "Col. Hidalgo, Durango", lat: 24.0180, lng: -104.6520 },
@@ -263,19 +262,18 @@
             const usuario = await res.json();
 
             if (usuario && !usuario.error) {
-                nombreUsuario = usuario.nombre;
-                document.getElementById('usr-nombre').innerText = usuario.nombre;
+                nombreUsuario = usuario.nombre || 'Paciente Registrado';
+                document.getElementById('usr-nombre').innerText = nombreUsuario;
                 document.getElementById('usr-plan').innerText = usuario.plan ? `Plan ${usuario.plan}` : 'Plan Esencial';
                 document.getElementById('usr-id').innerText = `ID: #${usuario.id.toString().padStart(6, '0')}`;
                 document.getElementById('usr-restantes').innerText = `${usuario.estudios_restantes} / 12`;
-
-                cargarClinicasEnMapaYSelect();
-                cargarCitasAgendadas();
             }
         } catch (err) {
             console.error("Error al cargar perfil:", err);
-            cargarClinicasEnMapaYSelect();
         }
+        
+        cargarClinicasEnMapaYSelect();
+        cargarCitasAgendadas();
     }
 
     async function cargarClinicasEnMapaYSelect() {
@@ -362,27 +360,44 @@
         }
     }
 
+    // FORMULARIO DE AGENDADO CORREGIDO Y ROBUSTO
     document.getElementById('form-agendar').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const estudioInput = document.getElementById('select-estudio').value;
+        const clinicaInput = document.getElementById('select-clinica').value;
+        const fechaInput = document.getElementById('fecha-cita').value;
+
+        if (!clinicaInput) {
+            alert("⚠️ Por favor selecciona una clínica disponible.");
+            return;
+        }
+
         const citaData = {
-            usuario_id: usuarioActualId,
-            paciente: nombreUsuario,
+            usuario_id: parseInt(usuarioActualId) || null,
+            paciente: nombreUsuario || 'Paciente Registrado',
             tipo_compra: 'Membresia',
-            estudio: document.getElementById('select-estudio').value,
-            clinica: document.getElementById('select-clinica').value,
-            fecha_cita: document.getElementById('fecha-cita').value
+            estudio: estudioInput,
+            clinica: clinicaInput,
+            fecha_cita: fechaInput
         };
 
-        const res = await fetch('/api/citas/agendar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(citaData)
-        });
+        try {
+            const res = await fetch('/api/citas/agendar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(citaData)
+            });
 
-        const json = await res.json();
-        if (res.ok && json.exito) {
-            alert(`🎉 ¡Cita agendada correctamente!\n\nTu Código QR es: ${json.cita.codigo_qr}`);
-            cargarPerfilUsuario();
+            const json = await res.json();
+            if (res.ok && json.exito) {
+                alert(`🎉 ¡Cita agendada correctamente!\n\nTu Código QR generado es: ${json.cita.codigo_qr}`);
+                cargarPerfilUsuario();
+            } else {
+                alert(`⚠️ Error al agendar: ${json.error || 'Intenta de nuevo'}`);
+            }
+        } catch (err) {
+            alert("⚠️ Error de comunicación con el servidor.");
         }
     });
 
