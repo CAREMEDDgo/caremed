@@ -6,7 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Cadena de conexión PostgreSQL (Neon)
 const connectionString = process.env.DATABASE_URL || 'postgresql://alex_owner:Abc123Xyz@ep-cool-name-123456.us-east-2.aws.neon.tech/neondb?sslmode=require';
 
 const pool = new Pool({
@@ -14,16 +13,19 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Inicializar Tablas y Modificar Columnas Faltantes Automáticamente
 async function inicializarTablas() {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios_membresias (
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(150) NOT NULL,
+                correo VARCHAR(150),
+                password VARCHAR(100),
                 telefono VARCHAR(50) NOT NULL,
+                sexo VARCHAR(20) DEFAULT 'Hombre',
                 plan VARCHAR(50) NOT NULL,
-                monto NUMERIC(10, 2) NOT NULL,
+                modalidad_pago VARCHAR(20) DEFAULT 'Anual',
+                monto NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 estudios_restantes INT DEFAULT 12,
                 fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -54,63 +56,35 @@ async function inicializarTablas() {
             );
         `);
 
-        // ASEGURAR QUE TODAS LAS COLUMNAS NUEVAS EXISTAN EN LA TABLA
-        await pool.query(`
-            DO $$ 
-            BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='correo') THEN
-                    ALTER TABLE usuarios_membresias ADD COLUMN correo VARCHAR(150);
-                END IF;
-
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='password') THEN
-                    ALTER TABLE usuarios_membresias ADD COLUMN password VARCHAR(100);
-                END IF;
-
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='sexo') THEN
-                    ALTER TABLE usuarios_membresias ADD COLUMN sexo VARCHAR(20) DEFAULT 'Hombre';
-                END IF;
-
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='modalidad_pago') THEN
-                    ALTER TABLE usuarios_membresias ADD COLUMN modalidad_pago VARCHAR(20) DEFAULT 'Anual';
-                END IF;
-            END $$;
-        `);
-
-        // Recargar el catálogo completo de Clínicas y Hospitales de Durango
+        // Sincronizar catálogo de Clínicas garantizando datos
         await pool.query('DELETE FROM clinicas_convenio');
         await pool.query(`
             INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
-            -- Paquete Esencial (Económicas / Locales)
             ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
             ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
             ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
             ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
             ('Laboratorio Clínico del Norte', 'Económico', 'Esencial', 'Blvd. Jose Maria Morelos, Durango', 24.0380, -104.6510, 15.00),
             ('Laboratorio del Centro', 'Económico', 'Esencial', 'Calle Constitución #210, Centro', 24.0260, -104.6670, 15.00),
-
-            -- Paquete Plus (Nivel Medio / Cadenas)
             ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
             ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
             ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
             ('Laboratorio del Lago', 'Medio', 'Plus', 'Fracc. Los Remedios, Durango', 24.0350, -104.6490, 12.00),
             ('Laboratorio Biomédico Durango', 'Medio', 'Plus', 'Av. Felipe Pescador, Durango', 24.0310, -104.6590, 12.00),
-            ('Laboratorio San Jorge', 'Medio', 'Plus', 'Av. Universidad #102, Durango', 24.0330, -104.6450, 12.00),
-
-            -- Paquete Premium (Hospitales Privados)
             ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
             ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
             ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00),
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL completamente sincronizada con clínicas.");
+        console.log("⚡ Base de datos inicializada correctamente.");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
 }
 inicializarTablas();
 
-/* ==================== RUTAS DE AUTENTICACIÓN ==================== */
+/* API ENDPOINTS */
 
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
@@ -123,7 +97,7 @@ app.post('/api/auth/registro', async (req, res) => {
         const result = await pool.query(
             `INSERT INTO usuarios_membresias (nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [nombre, correo, password, telefono, sexo || 'Hombre', plan, modalidad_pago || 'Anual', monto]
+            [nombre, correo, password, telefono, sexo || 'Hombre', plan || 'Esencial', modalidad_pago || 'Anual', monto || 0]
         );
 
         res.json({ exito: true, usuario: result.rows[0] });
@@ -155,32 +129,20 @@ app.get('/api/usuarios/:id', async (req, res) => {
     }
 });
 
-/* ==================== ENDPOINT CLINICAS ROBUSTO ==================== */
-
+// Devuelve siempre todas las clínicas o filtradas según plan
 app.get('/api/clinicas', async (req, res) => {
     let { plan } = req.query;
     try {
         let query = 'SELECT * FROM clinicas_convenio';
-        
-        // Filtro flexible según nivel de plan
         if (plan) {
-            if (plan.includes('Premium')) {
-                query = "SELECT * FROM clinicas_convenio";
-            } else if (plan.includes('Plus')) {
+            if (plan.includes('Plus')) {
                 query = "SELECT * FROM clinicas_convenio WHERE plan_minimo IN ('Esencial', 'Plus')";
-            } else {
+            } else if (plan.includes('Esencial')) {
                 query = "SELECT * FROM clinicas_convenio WHERE plan_minimo = 'Esencial'";
             }
         }
-
         const result = await pool.query(query);
-        
-        if (result.rows.length === 0) {
-            const fallback = await pool.query('SELECT * FROM clinicas_convenio');
-            return res.json(fallback.rows);
-        }
-
-        res.json(result.rows);
+        res.json(result.rows.length > 0 ? result.rows : (await pool.query('SELECT * FROM clinicas_convenio')).rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -219,10 +181,6 @@ app.put('/api/citas/:id/fecha', async (req, res) => {
 
 app.delete('/api/citas/:id', async (req, res) => {
     try {
-        const cita = await pool.query('SELECT * FROM citas_estudios WHERE id = $1', [req.params.id]);
-        if (cita.rows.length > 0 && cita.rows[0].usuario_id && cita.rows[0].tipo_compra === 'Membresia') {
-            await pool.query('UPDATE usuarios_membresias SET estudios_restantes = estudios_restantes + 1 WHERE id = $1', [cita.rows[0].usuario_id]);
-        }
         await pool.query('DELETE FROM citas_estudios WHERE id = $1', [req.params.id]);
         res.json({ exito: true });
     } catch (err) {
@@ -244,7 +202,7 @@ app.get('/api/admin/resumen', async (req, res) => {
         const suscriptores = await pool.query('SELECT * FROM usuarios_membresias ORDER BY id DESC');
         const citas = await pool.query('SELECT * FROM citas_estudios ORDER BY id DESC');
         const comisionesPorClinica = await pool.query(`
-            SELECT clinica, COUNT(*) as total_pacientes, SUM(comision_generada) as total_comision_a_cobrar
+            SELECT clinica, COUNT(*) as total_pacientes, COALESCE(SUM(comision_generada), 0) as total_comision_a_cobrar
             FROM citas_estudios GROUP BY clinica ORDER BY total_comision_a_cobrar DESC
         `);
 
@@ -264,4 +222,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor listo en el puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
