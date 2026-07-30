@@ -3,52 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.R.E.M.E.D. - Panel de Paciente</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>CAREMED - Empresas y Clínicas Convenio</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #f4f7f9; color: #333; }
         
         header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
         .logo-img { height: 42px; object-fit: contain; }
-        nav { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
         nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
         nav a:hover, nav a.active { background: #0056b3; color: white; }
-        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        .login-box { max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); text-align: center; }
-        .login-box h2 { color: #0056b3; margin-bottom: 8px; }
-        .login-box p { font-size: 13px; color: #666; margin-bottom: 20px; }
-        .login-box label { font-size: 12px; font-weight: bold; text-align: left; display: block; margin-top: 10px; color: #444; }
-        .login-box input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .btn-login { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .hero { background: linear-gradient(135deg, #004085, #0056b3); color: white; text-align: center; padding: 50px 20px; }
+        .hero h1 { font-size: 30px; margin-bottom: 10px; }
+        .hero p { font-size: 15px; max-width: 750px; margin: 0 auto; opacity: 0.9; }
 
-        .container { max-width: 1100px; margin: 25px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        .container { max-width: 1100px; margin: -25px auto 40px auto; padding: 0 20px; position: relative; z-index: 10; }
 
-        .card-digital { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,86,179,0.25); position: relative; overflow: hidden; }
-        .card-plan { background: #28a745; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; }
-        .card-number { font-size: 18px; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px; }
-        .card-stats { display: flex; justify-content: space-between; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; font-size: 13px; }
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .plan-card { background: white; border-radius: 14px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; border: 2px solid #e0e0e0; }
+        .plan-card.featured { border-color: #28a745; position: relative; }
+        .badge { position: absolute; top: -12px; right: 20px; background: #28a745; color: white; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px; }
 
-        .panel-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .panel-box h3 { color: #0056b3; margin-bottom: 15px; font-size: 18px; }
+        .plan-title { font-size: 22px; color: #0056b3; font-weight: bold; }
+        .plan-price { font-size: 28px; color: #28a745; font-weight: bold; margin: 10px 0 5px 0; }
 
-        #map { height: 280px; width: 100%; border-radius: 10px; margin-top: 10px; }
+        .benefits-list { list-style: none; margin-bottom: 20px; font-size: 13px; color: #555; }
+        .benefits-list li { margin-bottom: 8px; }
 
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #555; }
-        .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .btn-schedule { background: #28a745; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-subscribe { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
-        th { background: #0056b3; color: white; }
-        .qr-code { background: #eef5ff; color: #0056b3; font-weight: bold; padding: 4px 8px; border-radius: 4px; font-family: monospace; display: inline-block; }
-
-        .btn-act { padding: 4px 8px; border-radius: 4px; border: none; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 3px; }
-        .btn-edit { background: #ffc107; color: #333; }
-        .btn-del { background: #dc3545; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
+        .modal-content label { font-size: 12px; font-weight: bold; color: #444; display: block; margin-top: 8px; }
+        .modal-content input { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+        .btn-confirm { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-cancel { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
     </style>
 </head>
 <body>
@@ -57,353 +48,131 @@
     <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
     <nav>
         <a href="/">💳 Membresías Personas</a>
-        <a href="/empresas.html">🏢 Empresas y Convenios</a>
-        <a href="/paciente-dashboard.html" class="active">🩺 Mi Panel y Citas</a>
+        <a href="/empresas.html" class="active">🏢 Empresas y Convenios</a>
+        <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
         <a href="/farmacias.html">💊 Farmacias Aliadas</a>
+        <a href="/empresa-dashboard.html">🏢 Portal Empresas</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
-        <button id="btn-cerrar-sesion" class="btn-logout" style="display:none;" onclick="cerrarSesion()">🔒 Cerrar Sesión</button>
     </nav>
 </header>
 
-<div id="vista-login" class="login-box">
-    <h2>🔑 Iniciar Sesión</h2>
-    <p>Ingresa a tu cuenta de paciente CAREMED para consultar tu saldo de estudios y agendar citas.</p>
-    
-    <form id="form-login">
-        <label>Correo Electrónico</label>
-        <input type="email" id="login-correo" placeholder="ejemplo@correo.com" required>
+<section class="hero">
+    <h1>Convenios Corporativos y Red de Clínicas Afiliadas</h1>
+    <p>Asegura un flujo constante de pacientes mensuales para tu clínica o brinda cobertura de salud a tus empleados con <b>CAREMED</b>.</p>
+</section>
 
-        <label>Contraseña</label>
-        <input type="password" id="login-pass" placeholder="******" required>
-
-        <button type="submit" class="btn-login">Ingresar a Mi Panel</button>
-    </form>
-    <p style="margin-top: 15px; font-size: 12px;">¿Aún no tienes membresía? <a href="/" style="color:#0056b3; font-weight:bold;">Contrátala aquí</a></p>
-</div>
-
-<div id="vista-dashboard" class="container" style="display: none;">
-    <div>
-        <div class="card-digital">
-            <span class="card-plan" id="usr-plan">Plan Esencial</span>
-            <div style="font-size: 12px; opacity: 0.8;">Paciente Suscrito</div>
-            <div style="font-size: 20px; font-weight: bold;" id="usr-nombre">Cargando...</div>
-            <div class="card-number" id="usr-id">ID: #000000</div>
-            
-            <div class="card-stats">
-                <div>Estudios Restantes: <strong id="usr-restantes">12 / 12</strong></div>
-                <div>Estado: <strong style="color:#81c784;">Activo</strong></div>
+<div class="container">
+    <div class="plans-grid">
+        
+        <!-- PLAN BÁSICO -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Básico</div>
+                <div class="plan-price">$2,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 20 visitas mensuales</strong></li>
+                    <li>✅ Promoción en directorio y mapa oficial</li>
+                    <li>✅ Facturación y reporte mensual</li>
+                </ul>
             </div>
+            <button class="btn-subscribe" onclick="abrirModalEmpresa('Básico', 2499, 20)">Contratar Básico</button>
         </div>
 
-        <div class="panel-box" style="margin-top: 20px;">
-            <h3>📅 Agendar Estudio Preventivo</h3>
-            <form id="form-agendar">
-                <div class="form-group">
-                    <label>Selecciona el Estudio Médico</label>
-                    <select id="select-estudio" required>
-                        <option value="Ácido úrico">Ácido úrico</option>
-                        <option value="Antígeno Prostático Específico (PSA total)">Antígeno Prostático Específico (PSA total)</option>
-                        <option value="Biometría hemática completa (BHC)">Biometría hemática completa (BHC)</option>
-                        <option value="Cortisol">Cortisol</option>
-                        <option value="Creatinina sérica">Creatinina sérica</option>
-                        <option value="Electrolitos séricos">Electrolitos séricos</option>
-                        <option value="Estradiol">Estradiol</option>
-                        <option value="Examen general de orina">Examen general de orina</option>
-                        <option value="Ferritina">Ferritina</option>
-                        <option value="FSH">FSH</option>
-                        <option value="Hemoglobina glicosilada (HbA1c)">Hemoglobina glicosilada (HbA1c)</option>
-                        <option value="Hierro sérico">Hierro sérico</option>
-                        <option value="Insulina basal">Insulina basal</option>
-                        <option value="LH">LH</option>
-                        <option value="Papanicolaou (citología cervical)">Papanicolaou (citología cervical)</option>
-                        <option value="Perfil de lípidos">Perfil de lípidos</option>
-                        <option value="Perfil hormonal masculino (LH, FSH y prolactina)">Perfil hormonal masculino (LH, FSH y prolactina)</option>
-                        <option value="Progesterona">Progesterona</option>
-                        <option value="Prolactina">Prolactina</option>
-                        <option value="Proteína C Reactiva (PCR)">Proteína C Reactiva (PCR)</option>
-                        <option value="Prueba de VPH por PCR">Prueba de VPH por PCR</option>
-                        <option value="Prueba VIH de 4.ª generación">Prueba VIH de 4.ª generación</option>
-                        <option value="Pruebas de función hepática">Pruebas de función hepática</option>
-                        <option value="Química sanguínea de 27 elementos">Química sanguínea de 27 elementos</option>
-                        <option value="T3 Libre">T3 Libre</option>
-                        <option value="T4 Libre">T4 Libre</option>
-                        <option value="Testosterona total">Testosterona total</option>
-                        <option value="TSH">TSH</option>
-                        <option value="Urea">Urea</option>
-                        <option value="Vitamina B12">Vitamina B12</option>
-                        <option value="Vitamina D">Vitamina D</option>
-                        <option value="β-hCG cuantitativa (embarazo)">β-hCG cuantitativa (embarazo)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Clínica / Hospital en Convenio</label>
-                    <select id="select-clinica" required>
-                        <option value="">Cargando laboratorios y clínicas en Durango...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Fecha de la Cita</label>
-                    <input type="date" id="fecha-cita" required>
-                </div>
-
-                <button type="submit" class="btn-schedule">📌 Agendar Cita y Generar QR</button>
-            </form>
-        </div>
-    </div>
-
-    <div>
-        <div class="panel-box">
-            <h3>📍 Clínicas y Hospitales Disponibles en Durango</h3>
-            <div id="map"></div>
+        <!-- PLAN MEDIO -->
+        <div class="plan-card featured">
+            <span class="badge">RECOMENDADO</span>
+            <div>
+                <div class="plan-title">Plan Medio</div>
+                <div class="plan-price">$5,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 40 visitas mensuales</strong></li>
+                    <li>✅ Prioridad en recomendaciones de la App</li>
+                    <li>✅ Panel de estadísticas de pacientes</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" style="background:#28a745;" onclick="abrirModalEmpresa('Medio', 5499, 40)">Contratar Medio</button>
         </div>
 
-        <div class="panel-box">
-            <h3>📋 Mis Citas y Gestión de Citas</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Estudio</th>
-                        <th>Clínica</th>
-                        <th>Fecha</th>
-                        <th>Código QR</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-citas">
-                    <tr><td colspan="5" style="text-align:center;">Cargando historial de citas...</td></tr>
-                </tbody>
-            </table>
+        <!-- PLAN PREMIUM -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Premium</div>
+                <div class="plan-price">$7,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 60 visitas mensuales</strong></li>
+                    <li>✅ Cobertura destacada en Durango</li>
+                    <li>✅ Canalización médica prioritaria</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" onclick="abrirModalEmpresa('Premium', 7499, 60)">Contratar Premium</button>
         </div>
+
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Modal Suscripción Empresa -->
+<div id="modal-empresa" class="modal">
+    <div class="modal-content">
+        <h3>🏢 Registro de Convenio Corporativo</h3>
+        <p id="modal-empresa-info" style="font-size: 12px; color: #0056b3; font-weight: bold; margin-bottom: 8px;"></p>
+        <form id="form-empresa">
+            <label>Nombre de la Empresa o Clínica</label>
+            <input type="text" id="emp-nombre" placeholder="Ej. Clínica San Francisco" required>
+
+            <label>Nombre del Rep. Legal o Contacto</label>
+            <input type="text" id="emp-contacto" placeholder="Ej. Dr. Roberto Gómez" required>
+
+            <label>Correo Electrónico Empresarial</label>
+            <input type="email" id="emp-correo" placeholder="contacto@empresa.com" required>
+
+            <label>Teléfono de Contacto</label>
+            <input type="tel" id="emp-telefono" placeholder="618 123 4567" required>
+
+            <div class="modal-btns">
+                <button type="submit" class="btn-confirm">Activar Convenio</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    let usuarioActualId = localStorage.getItem('caremed_user_id');
-    let nombreUsuario = 'Paciente Registrado';
-    let map = null;
-    let markersGroup = L.layerGroup();
+    let planEmpresaSeleccionado = {};
 
-    const clinicasBase = [
-        { nombre: "Laboratorio Gutiérrez", categoria: "Económico", direccion: "Zona Centro, Durango", lat: 24.0250, lng: -104.6680 },
-        { nombre: "Laboratorio San José", categoria: "Económico", direccion: "Col. Hidalgo, Durango", lat: 24.0180, lng: -104.6520 },
-        { nombre: "Laboratorio Clínico del Guadiana", categoria: "Económico", direccion: "Calle Negrete #304, Centro", lat: 24.0270, lng: -104.6640 },
-        { nombre: "Laboratorio Analiza", categoria: "Económico", direccion: "Av. Normal, Durango", lat: 24.0290, lng: -104.6610 },
-        { nombre: "Laboratorio Clínico del Norte", categoria: "Económico", direccion: "Blvd. Jose Maria Morelos, Durango", lat: 24.0380, lng: -104.6510 },
-        { nombre: "Laboratorio del Centro", categoria: "Económico", direccion: "Calle Constitución #210, Centro", lat: 24.0260, lng: -104.6670 },
-        { nombre: "Salud Digna Durango", categoria: "Medio", direccion: "Av. 20 de Noviembre #801, Centro", lat: 24.0265, lng: -104.6650 },
-        { nombre: "Laboratorios Chopo", categoria: "Medio", direccion: "Blvd. Dolores del Río, Durango", lat: 24.0220, lng: -104.6580 },
-        { nombre: "Laboratorio Juárez", categoria: "Medio", direccion: "Av. Juárez #405, Centro", lat: 24.0240, lng: -104.6620 },
-        { nombre: "Laboratorio del Lago", categoria: "Medio", direccion: "Fracc. Los Remedios, Durango", lat: 24.0350, lng: -104.6490 },
-        { nombre: "Hospital San Jorge", categoria: "Hospital", direccion: "Av. Hidalgo #412, Centro", lat: 24.0285, lng: -104.6630 },
-        { nombre: "Hospital del Parque", categoria: "Hospital", direccion: "Calle del Parque #115, Durango", lat: 24.0150, lng: -104.6700 },
-        { nombre: "Hospital La Paz", categoria: "Hospital", direccion: "Blvd. Francisco Villa #101, Durango", lat: 24.0410, lng: -104.6320 },
-        { nombre: "Hospital Santa Bárbara", categoria: "Hospital", direccion: "Calle 5 de Febrero, Durango", lat: 24.0245, lng: -104.6690 }
-    ];
-
-    if (usuarioActualId) {
-        mostrarDashboard();
-    } else {
-        document.getElementById('vista-login').style.display = 'block';
-        document.getElementById('vista-dashboard').style.display = 'none';
+    function abrirModalEmpresa(plan, monto, visitas) {
+        planEmpresaSeleccionado = { plan, monto, visitas };
+        document.getElementById('modal-empresa-info').innerText = `Plan ${plan}: $${monto} MXN/mes (${visitas} visitas garantizadas)`;
+        document.getElementById('modal-empresa').style.display = 'flex';
     }
 
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
+    function cerrarModal() {
+        document.getElementById('modal-empresa').style.display = 'none';
+    }
+
+    document.getElementById('form-empresa').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const correo = document.getElementById('login-correo').value;
-        const password = document.getElementById('login-pass').value;
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo, password })
-            });
-
-            const json = await res.json();
-            if (res.ok && json.exito) {
-                localStorage.setItem('caremed_user_id', json.usuario.id);
-                usuarioActualId = json.usuario.id;
-                mostrarDashboard();
-            } else {
-                alert(`⚠️ ${json.error}`);
-            }
-        } catch (err) {
-            alert('⚠️ Error de conexión al servidor.');
-        }
-    });
-
-    function mostrarDashboard() {
-        document.getElementById('vista-login').style.display = 'none';
-        document.getElementById('vista-dashboard').style.display = 'grid';
-        document.getElementById('btn-cerrar-sesion').style.display = 'inline-block';
-
-        if (!map) {
-            map = L.map('map').setView([24.0277, -104.6532], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-            markersGroup.addTo(map);
-        }
-
-        setTimeout(() => { if (map) map.invalidateSize(); }, 300);
-
-        cargarPerfilUsuario();
-    }
-
-    function cerrarSesion() {
-        localStorage.removeItem('caremed_user_id');
-        window.location.reload();
-    }
-
-    async function cargarPerfilUsuario() {
-        try {
-            const res = await fetch(`/api/usuarios/${usuarioActualId}`);
-            const usuario = await res.json();
-
-            if (usuario && !usuario.error) {
-                nombreUsuario = usuario.nombre || 'Paciente Registrado';
-                document.getElementById('usr-nombre').innerText = nombreUsuario;
-                document.getElementById('usr-plan').innerText = usuario.plan ? `Plan ${usuario.plan}` : 'Plan Esencial';
-                document.getElementById('usr-id').innerText = `ID: #${usuario.id.toString().padStart(6, '0')}`;
-                document.getElementById('usr-restantes').innerText = `${usuario.estudios_restantes} / 12`;
-            }
-        } catch (err) {
-            console.error("Error al cargar perfil:", err);
-        }
-        
-        cargarClinicasEnMapaYSelect();
-        cargarCitasAgendadas();
-    }
-
-    async function cargarClinicasEnMapaYSelect() {
-        const select = document.getElementById('select-clinica');
-        select.innerHTML = '';
-        markersGroup.clearLayers();
-
-        let clinicasAMostrar = clinicasBase;
-
-        try {
-            const res = await fetch(`/api/clinicas`);
-            const data = await res.json();
-            if (data && data.length > 0) {
-                clinicasAMostrar = data;
-            }
-        } catch (err) {
-            console.log("Usando catálogo local garantizado.");
-        }
-
-        clinicasAMostrar.forEach(c => {
-            select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
-            
-            const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
-                .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
-            markersGroup.addLayer(marker);
-        });
-
-        if (map) setTimeout(() => map.invalidateSize(), 200);
-    }
-
-    async function cargarCitasAgendadas() {
-        const tbody = document.getElementById('tabla-citas');
-        try {
-            const res = await fetch(`/api/citas/usuario/${usuarioActualId}`);
-            const citas = await res.json();
-
-            if (!citas || citas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#777;">No tienes citas agendadas aún.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = '';
-            citas.forEach(c => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${c.estudio}</strong></td>
-                        <td>${c.clinica}</td>
-                        <td>${new Date(c.fecha_cita).toLocaleDateString()}</td>
-                        <td><span class="qr-code">📱 ${c.codigo_qr}</span></td>
-                        <td>
-                            <button class="btn-act btn-edit" onclick="cambiarFechaCita(${c.id})">✏️ Fecha</button>
-                            <button class="btn-act btn-del" onclick="cancelarCita(${c.id})">🗑️ Cancelar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error al cargar citas.</td></tr>';
-        }
-    }
-
-    async function cambiarFechaCita(idCita) {
-        const nuevaFecha = prompt("Ingresa la nueva fecha para tu cita (Año-Mes-Día, ej: 2026-08-15):");
-        if (nuevaFecha) {
-            const res = await fetch(`/api/citas/${idCita}/fecha`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nueva_fecha: nuevaFecha })
-            });
-            if (res.ok) {
-                alert("✅ Fecha actualizada con éxito.");
-                cargarCitasAgendadas();
-            }
-        }
-    }
-
-    async function cancelarCita(idCita) {
-        if (confirm("¿Deseas cancelar esta cita agendada por error?")) {
-            const res = await fetch(`/api/citas/${idCita}`, { method: 'DELETE' });
-            if (res.ok) {
-                alert("✅ Cita cancelada.");
-                cargarPerfilUsuario();
-            }
-        }
-    }
-
-    // FORMULARIO DE AGENDADO CORREGIDO Y ROBUSTO
-    document.getElementById('form-agendar').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const estudioInput = document.getElementById('select-estudio').value;
-        const clinicaInput = document.getElementById('select-clinica').value;
-        const fechaInput = document.getElementById('fecha-cita').value;
-
-        if (!clinicaInput) {
-            alert("⚠️ Por favor selecciona una clínica disponible.");
-            return;
-        }
-
-        const citaData = {
-            usuario_id: parseInt(usuarioActualId) || null,
-            paciente: nombreUsuario || 'Paciente Registrado',
-            tipo_compra: 'Membresia',
-            estudio: estudioInput,
-            clinica: clinicaInput,
-            fecha_cita: fechaInput
+        const datos = {
+            empresa_nombre: document.getElementById('emp-nombre').value,
+            contacto_nombre: document.getElementById('emp-contacto').value,
+            correo: document.getElementById('emp-correo').value,
+            telefono: document.getElementById('emp-telefono').value,
+            plan_empresa: planEmpresaSeleccionado.plan,
+            visitas_garantizadas: planEmpresaSeleccionado.visitas,
+            monto: planEmpresaSeleccionado.monto
         };
 
-        try {
-            const res = await fetch('/api/citas/agendar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(citaData)
-            });
+        const res = await fetch('/api/empresas/suscripcion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
 
-            const json = await res.json();
-            if (res.ok && json.exito) {
-                alert(`🎉 ¡Cita agendada correctamente!\n\nTu Código QR generado es: ${json.cita.codigo_qr}`);
-                cargarPerfilUsuario();
-            } else {
-                alert(`⚠️ Error al agendar: ${json.error || 'Intenta de nuevo'}`);
-            }
-        } catch (err) {
-            alert("⚠️ Error de comunicación con el servidor.");
+        if (res.ok) {
+            alert('🎉 ¡Convenio registrado con éxito!\n\nUn ejecutivo de CAREMED se pondrá en contacto para formalizar la alianza.');
+            cerrarModal();
+            window.location.href = '/empresa-dashboard.html';
         }
     });
-
-    const manana = new Date();
-    manana.setDate(manana.getDate() + 1);
-    document.getElementById('fecha-cita').value = manana.toISOString().split('T')[0];
 </script>
 
 </body>

@@ -283,4 +283,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor C.A.R.E.M.E.D. activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor CAREMED activo en puerto ${PORT}`));

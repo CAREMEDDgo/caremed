@@ -3,40 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.R.E.M.E.D. - Red de Farmacias Aliadas</title>
+    <title>CAREMED - Farmacias Aliadas</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #f4f7f9; color: #333; }
-        
+
         header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
         .logo-img { height: 42px; object-fit: contain; }
         nav { display: flex; gap: 8px; flex-wrap: wrap; }
         nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
         nav a:hover, nav a.active { background: #0056b3; color: white; }
 
-        .hero { background: linear-gradient(135deg, #0088ff, #0056b3); color: white; text-align: center; padding: 40px 20px; }
+        .hero { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; text-align: center; padding: 40px 20px; }
         .hero h1 { font-size: 28px; margin-bottom: 8px; }
-        .hero p { font-size: 15px; opacity: 0.9; max-width: 600px; margin: 0 auto; }
 
-        .container { max-width: 1100px; margin: 25px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .container { max-width: 1100px; margin: 25px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 
         .panel-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .panel-box h3 { color: #0056b3; font-size: 18px; margin-bottom: 12px; }
+        .panel-box h3 { color: #0056b3; margin-bottom: 12px; font-size: 18px; }
 
-        #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid #e0e0e0; }
+        #map { height: 400px; width: 100%; border-radius: 10px; }
 
-        .pharmacy-grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 5px; }
-        .pharmacy-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .pharmacy-card:hover { border-color: #0056b3; background: #ffffff; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
-
-        .pharmacy-name { font-size: 15px; font-weight: bold; color: #0056b3; }
-        .pharmacy-desc { font-size: 12px; color: #666; margin-top: 3px; }
-        .tag-promo { background: #e8f5e9; color: #28a745; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 12px; text-transform: uppercase; margin-top: 5px; display: inline-block; }
-
-        .btn-location { background: #0056b3; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .btn-location:hover { background: #004085; }
+        .pharmacy-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .pharmacy-item:last-child { border-bottom: none; }
+        .pharmacy-name { font-weight: bold; color: #0056b3; font-size: 14px; }
+        .pharmacy-discount { color: #28a745; font-weight: bold; font-size: 12px; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -44,89 +37,67 @@
 <header>
     <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
     <nav>
-        <a href="/">💳 Membresías y Tienda</a>
+        <a href="/">💳 Membresías Personas</a>
+        <a href="/empresas.html">🏢 Empresas y Convenios</a>
         <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
-        <a href="/farmacias.html" class="active">💊 Farmacias Convenio</a>
+        <a href="/farmacias.html" class="active">💊 Farmacias Aliadas</a>
+        <a href="/empresa-dashboard.html">🏢 Portal Empresas</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
     </nav>
 </header>
 
 <section class="hero">
     <h1>Red de Farmacias Aliadas en Durango</h1>
-    <p>Presenta tu credencial digital C.A.R.E.M.E.D. y obtén descuentos en tus medicamentos en cualquiera de nuestras sucursales aliadas.</p>
+    <p>Presenta tu credencial digital de <b>CAREMED</b> y obtén descuentos exclusivos en medicamentos y patente.</p>
 </section>
 
 <div class="container">
-    
-    <!-- Lista de Farmacias Promocionadas -->
     <div class="panel-box">
-        <h3>🏬 Sucursales y Promociones Activas</h3>
-        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Selecciona una farmacia para ubicarla en el mapa de la ciudad:</p>
-        
-        <div class="pharmacy-grid" id="lista-farmacias">
-            <!-- Carga dinámica -->
+        <h3>💊 Farmacias con Convenio</h3>
+        <div class="pharmacy-item">
+            <div class="pharmacy-name">Farmacia Guadalajara (Suc. Centro)</div>
+            <div>Av. 20 de Noviembre #401, Durango</div>
+            <div class="pharmacy-discount">🏷️ 10% a 15% de descuento con membresía</div>
+        </div>
+        <div class="pharmacy-item">
+            <div class="pharmacy-name">Farmacia Benavides (Suc. Normal)</div>
+            <div>Av. Universidad #200, Durango</div>
+            <div class="pharmacy-discount">🏷️ Precios preferenciales en cuadro básico</div>
+        </div>
+        <div class="pharmacy-item">
+            <div class="pharmacy-name">Farmacias del Ahorro (Suc. Felipe Pescador)</div>
+            <div>Blvd. Felipe Pescador #110, Durango</div>
+            <div class="pharmacy-discount">🏷️ Acumulación de puntos y descuento exclusivo</div>
+        </div>
+        <div class="pharmacy-item">
+            <div class="pharmacy-name">Farmacia Madero</div>
+            <div>Calle Madero #305, Centro, Durango</div>
+            <div class="pharmacy-discount">🏷️ Descuento especial en genéricos de calidad</div>
         </div>
     </div>
 
-    <!-- Mapa Interactivo Leaflet -->
     <div class="panel-box">
-        <h3>📍 Mapa de Cobertura en Durango, Dgo.</h3>
+        <h3>📍 Ubicación de Sucursales Aliadas</h3>
         <div id="map"></div>
     </div>
-
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Lista de las 13 farmacias en la ciudad de Durango
-    const farmacias = [
-        { nombre: "Farmacia La Esperanza", promo: "10% de Descuento con Membresía", zona: "Zona Centro, Durango", lat: 24.0255, lng: -104.6670 },
-        { nombre: "Droguería La Esperanza", promo: "Surtido de Fórmulas y Recetas", zona: "Calle Negrete, Centro", lat: 24.0272, lng: -104.6635 },
-        { nombre: "Farmacia Del Pueblo", promo: "Precios de Promoción Anual", zona: "Col. Hidalgo, Durango", lat: 24.0190, lng: -104.6530 },
-        { nombre: "Farmacia México Durango", promo: "15% en Medicamento Genérico", zona: "Av. 20 de Noviembre", lat: 24.0260, lng: -104.6655 },
-        { nombre: "Farmacia Farcom", promo: "Atención Especializada 24/7", zona: "Av. Normal, Durango", lat: 24.0295, lng: -104.6615 },
-        { nombre: "Farmacia Santa Clara", promo: "Descuento en Material de Cura", zona: "Fracc. Huizache", lat: 24.0175, lng: -104.6490 },
-        { nombre: "Farmacia Benavides", promo: "Convenio Nacional Preferencial", zona: "Blvd. Dolores del Río", lat: 24.0230, lng: -104.6570 },
-        { nombre: "Farmacia Navir", promo: "Envíos Locales Promocionados", zona: "Zona Centro, Durango", lat: 24.0280, lng: -104.6685 },
-        { nombre: "Farmacia Omega", promo: "10% de Bonificación en Monedero", zona: "Av. Universidad", lat: 24.0340, lng: -104.6470 },
-        { nombre: "Farmacia Del Ahorro", promo: "Monedero del Ahorro Integrado", zona: "Blvd. Francisco Villa", lat: 24.0400, lng: -104.6340 },
-        { nombre: "Farmacia La Miniatura", promo: "Tradición e Historial en Durango", zona: "Calle Constitución, Centro", lat: 24.0248, lng: -104.6660 },
-        { nombre: "Farmacia Especializada", promo: "Medicamentos de Alta Especialidad", zona: "Zona Hospitales, Durango", lat: 24.0305, lng: -104.6590 },
-        { nombre: "Farmacia Naturista Génesis", promo: "20% en Suplementos y Herbolaria", zona: "Av. Juárez, Durango", lat: 24.0235, lng: -104.6625 }
-    ];
-
     const map = L.map('map').setView([24.0277, -104.6532], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-    const marcadores = {};
+    const farmacias = [
+        { nombre: "Farmacia Guadalajara Centro", lat: 24.0265, lng: -104.6650, dir: "Av. 20 de Noviembre #401" },
+        { nombre: "Farmacia Benavides Normal", lat: 24.0290, lng: -104.6610, dir: "Av. Universidad #200" },
+        { nombre: "Farmacias del Ahorro Felipe Pescador", lat: 24.0310, lng: -104.6590, dir: "Blvd. Felipe Pescador #110" },
+        { nombre: "Farmacia Madero", lat: 24.0255, lng: -104.6675, dir: "Calle Madero #305" }
+    ];
 
-    const contenedor = document.getElementById('lista-farmacias');
-    farmacias.forEach((f, idx) => {
-        // Crear tarjeta HTML
-        contenedor.innerHTML += `
-            <div class="pharmacy-card">
-                <div>
-                    <div class="pharmacy-name">💊 ${f.nombre}</div>
-                    <div class="pharmacy-desc">📍 ${f.zona}</div>
-                    <span class="tag-promo">🎁 ${f.promo}</span>
-                </div>
-                <button class="btn-location" onclick="enfocarMapa(${f.lat}, ${f.lng}, '${f.nombre}')">Ver Mapa</button>
-            </div>
-        `;
-
-        // Crear marcador en el mapa
-        const marker = L.marker([f.lat, f.lng]).addTo(map)
-            .bindPopup(`<b>💊 ${f.nombre}</b><br>${f.zona}<br><span style="color:#28a745; font-weight:bold;">${f.promo}</span>`);
-        
-        marcadores[f.nombre] = marker;
+    farmacias.forEach(f => {
+        L.marker([f.lat, f.lng]).addTo(map)
+            .bindPopup(`<b>${f.nombre}</b><br>${f.dir}`);
     });
-
-    function enfocarMapa(lat, lng, nombre) {
-        map.setView([lat, lng], 16, { animate: true });
-        if (marcadores[nombre]) {
-            marcadores[nombre].openPopup();
-        }
-    }
 </script>
 
 </body>
