@@ -163,7 +163,7 @@
     let usuarioActualId = localStorage.getItem('caremed_user_id');
     let nombreUsuario = '';
     let map = null;
-    let markersLayer = L.layerGroup();
+    let markersGroup = L.layerGroup();
 
     if (usuarioActualId) {
         mostrarDashboard();
@@ -205,11 +205,10 @@
         if (!map) {
             map = L.map('map').setView([24.0277, -104.6532], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-            markersLayer.addTo(map);
+            markersGroup.addTo(map);
         }
 
-        // Re-renderizar mapa al cambiar dimensiones
-        setTimeout(() => { if(map) map.invalidateSize(); }, 300);
+        setTimeout(() => { if (map) map.invalidateSize(); }, 300);
 
         cargarPerfilUsuario();
     }
@@ -227,11 +226,11 @@
             if (usuario && !usuario.error) {
                 nombreUsuario = usuario.nombre;
                 document.getElementById('usr-nombre').innerText = usuario.nombre;
-                document.getElementById('usr-plan').innerText = `Plan ${usuario.plan}`;
+                document.getElementById('usr-plan').innerText = usuario.plan ? `Plan ${usuario.plan}` : 'Plan Esencial';
                 document.getElementById('usr-id').innerText = `ID: #${usuario.id.toString().padStart(6, '0')}`;
                 document.getElementById('usr-restantes').innerText = `${usuario.estudios_restantes} / 12`;
 
-                cargarClinicasEnMapaYSelect(usuario.plan);
+                cargarClinicasEnMapaYSelect(usuario.plan || 'Esencial');
                 cargarCitasAgendadas();
             }
         } catch (err) {
@@ -239,32 +238,21 @@
         }
     }
 
-    async function cargarClinicasEnMapaYSelect(plan) {
+    async function cargarClinicasEnMapaYSelect(planUsuario) {
         try {
-            // Normalizar la categoría del plan para la API (Esencial, Plus, Premium)
-            let planFiltro = 'Esencial';
-            if (plan && plan.includes('Plus')) planFiltro = 'Plus';
-            if (plan && plan.includes('Premium')) planFiltro = 'Premium';
-
-            const res = await fetch(`/api/clinicas?plan=${planFiltro}`);
-            let clinicas = await res.json();
-
-            // Si por alguna razón la respuesta está vacía, consultar todas
-            if (!clinicas || clinicas.length === 0) {
-                const resAll = await fetch(`/api/clinicas`);
-                clinicas = await resAll.json();
-            }
+            const res = await fetch(`/api/clinicas?plan=${encodeURIComponent(planUsuario)}`);
+            const clinicas = await res.json();
 
             const select = document.getElementById('select-clinica');
             select.innerHTML = '';
-            markersLayer.clearLayers();
+            markersGroup.clearLayers();
 
             clinicas.forEach(c => {
                 select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
                 
                 const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
-                    .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Convenio C.A.R.E.M.E.D.`);
-                markersLayer.addLayer(marker);
+                    .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
+                markersGroup.addLayer(marker);
             });
 
             if (map) setTimeout(() => map.invalidateSize(), 200);

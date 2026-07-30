@@ -76,25 +76,34 @@ async function inicializarTablas() {
             END $$;
         `);
 
-        // Insertar clínicas base si la tabla está vacía
-        const checkClinicas = await pool.query('SELECT COUNT(*) FROM clinicas_convenio');
-        if (parseInt(checkClinicas.rows[0].count) === 0) {
-            await pool.query(`
-                INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
-                ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
-                ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
-                ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
-                ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
-                ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
-                ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
-                ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
-                ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
-                ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
-                ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00);
-            `);
-        }
+        // Recargar el catálogo completo de Clínicas y Hospitales de Durango
+        await pool.query('DELETE FROM clinicas_convenio');
+        await pool.query(`
+            INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
+            -- Paquete Esencial (Económicas / Locales)
+            ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
+            ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
+            ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
+            ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
+            ('Laboratorio Clínico del Norte', 'Económico', 'Esencial', 'Blvd. Jose Maria Morelos, Durango', 24.0380, -104.6510, 15.00),
+            ('Laboratorio del Centro', 'Económico', 'Esencial', 'Calle Constitución #210, Centro', 24.0260, -104.6670, 15.00),
 
-        console.log("⚡ Base de datos PostgreSQL completamente sincronizada (correo, password, sexo, modalidad_pago).");
+            -- Paquete Plus (Nivel Medio / Cadenas)
+            ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
+            ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
+            ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
+            ('Laboratorio del Lago', 'Medio', 'Plus', 'Fracc. Los Remedios, Durango', 24.0350, -104.6490, 12.00),
+            ('Laboratorio Biomédico Durango', 'Medio', 'Plus', 'Av. Felipe Pescador, Durango', 24.0310, -104.6590, 12.00),
+            ('Laboratorio San Jorge', 'Medio', 'Plus', 'Av. Universidad #102, Durango', 24.0330, -104.6450, 12.00),
+
+            -- Paquete Premium (Hospitales Privados)
+            ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
+            ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
+            ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00),
+            ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
+        `);
+
+        console.log("⚡ Base de datos PostgreSQL completamente sincronizada con clínicas.");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
@@ -103,7 +112,6 @@ inicializarTablas();
 
 /* ==================== RUTAS DE AUTENTICACIÓN ==================== */
 
-// 1. Registro de Nuevo Usuario con Membresía
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
     try {
@@ -124,7 +132,6 @@ app.post('/api/auth/registro', async (req, res) => {
     }
 });
 
-// 2. Inicio de Sesión
 app.post('/api/auth/login', async (req, res) => {
     const { correo, password } = req.body;
     try {
@@ -138,7 +145,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// 3. Obtener Datos del Perfil Actual
 app.get('/api/usuarios/:id', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM usuarios_membresias WHERE id = $1', [req.params.id]);
@@ -149,15 +155,31 @@ app.get('/api/usuarios/:id', async (req, res) => {
     }
 });
 
-/* ==================== OTROS ENDPOINTS ==================== */
+/* ==================== ENDPOINT CLINICAS ROBUSTO ==================== */
 
 app.get('/api/clinicas', async (req, res) => {
-    const { plan } = req.query;
+    let { plan } = req.query;
     try {
         let query = 'SELECT * FROM clinicas_convenio';
-        if (plan === 'Esencial') query += " WHERE plan_minimo = 'Esencial'";
-        if (plan === 'Plus') query += " WHERE plan_minimo IN ('Esencial', 'Plus')";
+        
+        // Filtro flexible según nivel de plan
+        if (plan) {
+            if (plan.includes('Premium')) {
+                query = "SELECT * FROM clinicas_convenio";
+            } else if (plan.includes('Plus')) {
+                query = "SELECT * FROM clinicas_convenio WHERE plan_minimo IN ('Esencial', 'Plus')";
+            } else {
+                query = "SELECT * FROM clinicas_convenio WHERE plan_minimo = 'Esencial'";
+            }
+        }
+
         const result = await pool.query(query);
+        
+        if (result.rows.length === 0) {
+            const fallback = await pool.query('SELECT * FROM clinicas_convenio');
+            return res.json(fallback.rows);
+        }
+
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
