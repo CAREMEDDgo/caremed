@@ -24,13 +24,13 @@
         .panel-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .panel-box h3 { color: #0056b3; margin-bottom: 12px; font-size: 18px; }
 
-        .pharmacy-list { max-height: 480px; overflow-y: auto; padding-right: 5px; }
+        .pharmacy-list { max-height: 520px; overflow-y: auto; padding-right: 5px; }
         .pharmacy-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         .pharmacy-item:last-child { border-bottom: none; }
         .pharmacy-name { font-weight: bold; color: #0056b3; font-size: 14px; }
         .pharmacy-discount { color: #28a745; font-weight: bold; font-size: 12px; margin-top: 3px; }
 
-        #map { height: 520px; width: 100%; border-radius: 10px; }
+        #map { height: 550px; width: 100%; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -48,20 +48,20 @@
 </header>
 
 <section class="hero">
-    <h1>Red de Farmacias Aliadas en Durango</h1>
-    <p>Presenta tu credencial digital de <b>CAREMED</b> y obtén precios preferenciales y descuentos en tu compra.</p>
+    <h1>Red de Farmacias y Sucursales Aliadas en Durango</h1>
+    <p>Presenta tu credencial digital de <b>CAREMED</b> en cualquiera de las sucursales participantes para obtener descuentos inmediatos.</p>
 </section>
 
 <div class="container">
     <div class="panel-box">
-        <h3>💊 Farmacias con Convenio en Durango</h3>
+        <h3>💊 Directorio de Sucursales en Durango</h3>
         <div class="pharmacy-list" id="lista-farmacias">
             <!-- Se llena dinámicamente mediante el script -->
         </div>
     </div>
 
     <div class="panel-box">
-        <h3>📍 Ubicación de Sucursales Aliadas en Durango</h3>
+        <h3>📍 Ubicación de Sucursales en Durango</h3>
         <div id="map"></div>
     </div>
 </div>
@@ -69,25 +69,37 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const farmaciasDurango = [
-        { nombre: "Farmacia La Esperanza", dir: "Calle Negrete, Zona Centro, Durango", lat: 24.0268, lng: -104.6672, desc: "🏷️ 10% de descuento en patente y genéricos" },
-        { nombre: "Droguería La Esperanza", dir: "Av. 20 de Noviembre, Zona Centro, Durango", lat: 24.0255, lng: -104.6645, desc: "🏷️ Descuento especial en fórmulas y patente" },
-        { nombre: "Farmacia del Pueblo", dir: "Calle Constitución, Zona Centro, Durango", lat: 24.0242, lng: -104.6660, desc: "🏷️ Precios preferenciales en cuadro básico" },
-        { nombre: "Farmacia México Durango", dir: "Av. Felipe Pescador, Durango", lat: 24.0320, lng: -104.6580, desc: "🏷️ Descuento preferencial con membresía" },
-        { nombre: "Farmacia Farcom", dir: "Blvd. Dolores del Río, Durango", lat: 24.0210, lng: -104.6595, desc: "🏷️ 10% a 15% de descuento directo" },
-        { nombre: "Farmacia Santa Clara", dir: "Calle 5 de Febrero, Durango", lat: 24.0238, lng: -104.6685, desc: "🏷️ Promociones semanales y descuento en medicamentos" },
-        { nombre: "Farmacia Benavides", dir: "Av. Universidad #200, Durango", lat: 24.0290, lng: -104.6610, desc: "🏷️ Descuento exclusivo en cuadro básico" },
+        // FARMACIA DEL AHORRO (MÚLTIPLES SUCURSALES)
+        { nombre: "Farmacia del Ahorro - Suc. Felipe Pescador", dir: "Blvd. Felipe Pescador #110, Durango", lat: 24.0310, lng: -104.6590, desc: "🏷️ Puntos y precio especial de convenio" },
+        { nombre: "Farmacia del Ahorro - Suc. 20 de Noviembre", dir: "Av. 20 de Noviembre #508, Centro", lat: 24.0262, lng: -104.6640, desc: "🏷️ Puntos y precio especial de convenio" },
+        { nombre: "Farmacia del Ahorro - Suc. Francisco Villa", dir: "Blvd. Francisco Villa #302, Durango", lat: 24.0380, lng: -104.6350, desc: "🏷️ Puntos y precio especial de convenio" },
+
+        // FARMACIA BENAVIDES (MÚLTIPLES SUCURSALES)
+        { nombre: "Farmacia Benavides - Suc. Normal", dir: "Av. Universidad #200, Durango", lat: 24.0290, lng: -104.6610, desc: "🏷️ Descuento exclusivo en cuadro básico" },
+        { nombre: "Farmacia Benavides - Suc. Centro", dir: "Calle Constitución #302, Centro", lat: 24.0250, lng: -104.6665, desc: "🏷️ Descuento exclusivo en cuadro básico" },
+        { nombre: "Farmacia Benavides - Suc. Dolores del Río", dir: "Blvd. Dolores del Río #405, Durango", lat: 24.0225, lng: -104.6570, desc: "🏷️ Descuento exclusivo en cuadro básico" },
+
+        // FARMACIA FARCOM (MÚLTIPLES SUCURSALES)
+        { nombre: "Farmacia Farcom - Suc. Dolores del Río", dir: "Blvd. Dolores del Río #120, Durango", lat: 24.0210, lng: -104.6595, desc: "🏷️ 10% a 15% de descuento directo" },
+        { nombre: "Farmacia Farcom - Suc. Jardines", dir: "Av. Guadiana #410, Durango", lat: 24.0350, lng: -104.6480, desc: "🏷️ 10% a 15% de descuento directo" },
+
+        // OTRAS FARMACIAS Y DROGUERÍAS
+        { nombre: "Farmacia La Esperanza", dir: "Calle Negrete #204, Zona Centro, Durango", lat: 24.0268, lng: -104.6672, desc: "🏷️ 10% de descuento en patente y genéricos" },
+        { nombre: "Droguería La Esperanza", dir: "Av. 20 de Noviembre #102, Zona Centro", lat: 24.0255, lng: -104.6645, desc: "🏷️ Descuento especial en fórmulas y patente" },
+        { nombre: "Farmacia del Pueblo", dir: "Calle Constitución #110, Zona Centro", lat: 24.0242, lng: -104.6660, desc: "🏷️ Precios preferenciales en cuadro básico" },
+        { nombre: "Farmacia México Durango", dir: "Av. Felipe Pescador #805, Durango", lat: 24.0320, lng: -104.6580, desc: "🏷️ Descuento preferencial con membresía" },
+        { nombre: "Farmacia Santa Clara", dir: "Calle 5 de Febrero #402, Durango", lat: 24.0238, lng: -104.6685, desc: "🏷️ Promociones semanales y descuento en medicamentos" },
         { nombre: "Navir", dir: "Zona Centro, Durango", lat: 24.0275, lng: -104.6630, desc: "🏷️ Precios especiales para afiliados CAREMED" },
-        { nombre: "Omega", dir: "Av. 20 de Noviembre, Durango", lat: 24.0260, lng: -104.6620, desc: "🏷️ Descuentos en productos médicos y fármacos" },
-        { nombre: "Farmacia del Ahorro", dir: "Blvd. Felipe Pescador #110, Durango", lat: 24.0310, lng: -104.6590, desc: "🏷️ Puntos y precio especial de convenio" },
-        { nombre: "Farmacia La Miniatura", dir: "Calle Juárez, Zona Centro, Durango", lat: 24.0248, lng: -104.6655, desc: "🏷️ Descuento directo en farmacia tradicional" },
-        { nombre: "Farmacia Especializada", dir: "Av. Hidalgo, Zona Centro, Durango", lat: 24.0280, lng: -104.6635, desc: "🏷️ Atención en especialidades con descuento" },
-        { nombre: "Farmacia Naturista Génesis", dir: "Calle Zaragoza, Zona Centro, Durango", lat: 24.0262, lng: -104.6680, desc: "🏷️ 10% de descuento en suplementos y naturistas" }
+        { nombre: "Omega", dir: "Av. 20 de Noviembre #900, Durango", lat: 24.0260, lng: -104.6620, desc: "🏷️ Descuentos en productos médicos y fármacos" },
+        { nombre: "Farmacia La Miniatura", dir: "Calle Juárez #215, Zona Centro, Durango", lat: 24.0248, lng: -104.6655, desc: "🏷️ Descuento directo en farmacia tradicional" },
+        { nombre: "Farmacia Especializada", dir: "Av. Hidalgo #305, Zona Centro, Durango", lat: 24.0280, lng: -104.6635, desc: "🏷️ Atención en especialidades con descuento" },
+        { nombre: "Farmacia Naturista Génesis", dir: "Calle Zaragoza #108, Zona Centro, Durango", lat: 24.0262, lng: -104.6680, desc: "🏷️ 10% de descuento en suplementos y naturistas" }
     ];
 
     const contenedorLista = document.getElementById('lista-farmacias');
     
     // Inicializar Mapa centrado en la ciudad de Durango
-    const map = L.map('map').setView([24.0270, -104.6630], 13);
+    const map = L.map('map').setView([24.0270, -104.6610], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
     farmaciasDurango.forEach(f => {
