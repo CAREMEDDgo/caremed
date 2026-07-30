@@ -14,15 +14,13 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Inicializar Tablas
+// Inicializar Tablas y Modificar Columnas Faltantes Automáticamente
 async function inicializarTablas() {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios_membresias (
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(150) NOT NULL,
-                correo VARCHAR(150) UNIQUE NOT NULL,
-                password VARCHAR(100) NOT NULL,
                 telefono VARCHAR(50) NOT NULL,
                 sexo VARCHAR(20) DEFAULT 'Hombre',
                 plan VARCHAR(50) NOT NULL,
@@ -58,6 +56,20 @@ async function inicializarTablas() {
             );
         `);
 
+        // AGREGAR COLUMNAS FALTANTES A TABLAS EXISTENTES SI NO EXISTEN
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='correo') THEN
+                    ALTER TABLE usuarios_membresias ADD COLUMN correo VARCHAR(150);
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='password') THEN
+                    ALTER TABLE usuarios_membresias ADD COLUMN password VARCHAR(100);
+                END IF;
+            END $$;
+        `);
+
         // Insertar clínicas base si la tabla está vacía
         const checkClinicas = await pool.query('SELECT COUNT(*) FROM clinicas_convenio');
         if (parseInt(checkClinicas.rows[0].count) === 0) {
@@ -76,7 +88,7 @@ async function inicializarTablas() {
             `);
         }
 
-        console.log("⚡ Base de datos inicializada con autenticación y cuentas de usuario.");
+        console.log("⚡ Base de datos PostgreSQL sincronizada con columna correo.");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
@@ -89,7 +101,6 @@ inicializarTablas();
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
     try {
-        // Verificar si el correo ya existe
         const existe = await pool.query('SELECT * FROM usuarios_membresias WHERE correo = $1', [correo]);
         if (existe.rows.length > 0) {
             return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
