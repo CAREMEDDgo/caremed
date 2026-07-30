@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.R.E.M.E.D. - Portal de Empresas y Clínicas</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: #f4f7f9; color: #333; }
+        
+        header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
+        .logo-img { height: 42px; object-fit: contain; }
+        nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; }
+
+        .login-box { max-width: 420px; margin: 60px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); text-align: center; }
+        .login-box h2 { color: #0056b3; margin-bottom: 8px; }
+        .login-box input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .btn-login { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 18px; }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: none; }
+        
+        .kpi-card { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; padding: 25px; border-radius: 14px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,86,179,0.2); }
+        .kpi-title { font-size: 13px; text-transform: uppercase; opacity: 0.9; }
+        .kpi-value { font-size: 32px; font-weight: bold; margin-top: 5px; }
+        .progress-bar { background: rgba(255,255,255,0.3); height: 10px; border-radius: 5px; margin-top: 15px; overflow: hidden; }
+        .progress-fill { background: #28a745; height: 100%; width: 0%; transition: 0.5s; }
+
+        .panel-box { background: white; padding: 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
+        th { background: #0056b3; color: white; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
+    <nav>
+        <a href="/empresas.html">← Volver a Convenios Corporativos</a>
+    </nav>
+</header>
+
+<div id="vista-login-emp" class="login-box">
+    <h2>🏢 Portal de Clínicas Afiliadas</h2>
+    <p style="font-size: 12px; color: #666;">Ingresa con el correo corporativo registrado:</p>
+    
+    <form id="form-login-emp">
+        <input type="email" id="emp-correo-login" placeholder="correo@tuclinica.com" required>
+        <button type="submit" class="btn-login">Consultar Mi Convenio</button>
+    </form>
+</div>
+
+<div id="vista-empresa" class="container">
+    <div class="kpi-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <span style="background:#28a745; font-size:11px; font-weight:bold; padding:3px 8px; border-radius:10px;" id="emp-plan-tag">Plan Medio</span>
+                <h2 id="emp-nombre-display" style="margin-top:5px;">Nombre de la Clínica</h2>
+            </div>
+            <button onclick="location.reload()" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Cerrar Sesión</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <div class="kpi-title">Visitas Canalizadas este Mes</div>
+            <div class="kpi-value"><span id="emp-visitas-actuales">0</span> / <span id="emp-visitas-garantizadas">40</span> Visitas</div>
+            
+            <div class="progress-bar">
+                <div id="bar-fill" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-box">
+        <h3>📋 Pacientes Canalizados con Código QR</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Estudio Médicamente Solicitado</th>
+                    <th>Fecha de Cita</th>
+                    <th>Código QR</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-pacientes-empresa">
+                <tr><td colspan="5" style="text-align:center;">Cargando lista de pacientes...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById('form-login-emp').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const correo = document.getElementById('emp-correo-login').value;
+
+        try {
+            const res = await fetch('/api/admin/resumen');
+            const data = await res.json();
+
+            const convenio = data.empresas.find(emp => emp.correo.toLowerCase() === correo.toLowerCase());
+
+            if (convenio) {
+                document.getElementById('vista-login-emp').style.display = 'none';
+                document.getElementById('vista-empresa').style.display = 'block';
+
+                document.getElementById('emp-nombre-display').innerText = convenio.empresa_nombre;
+                document.getElementById('emp-plan-tag').innerText = `Plan ${convenio.plan_empresa}`;
+                document.getElementById('emp-visitas-garantizadas').innerText = convenio.visitas_garantizadas;
+
+                // Filtrar citas enviadas a esta clinica
+                const citasClinica = data.citas.filter(c => c.clinica.toLowerCase().includes(convenio.empresa_nombre.toLowerCase()) || convenio.empresa_nombre.toLowerCase().includes(c.clinica.toLowerCase()));
+
+                const conteo = citasClinica.length;
+                document.getElementById('emp-visitas-actuales').innerText = conteo;
+
+                // Porcentaje barra de progreso
+                const pct = Math.min(100, Math.round((conteo / convenio.visitas_garantizadas) * 100));
+                document.getElementById('bar-fill').style.width = `${pct}%`;
+
+                // Llenar tabla
+                const tbody = document.getElementById('tabla-pacientes-empresa');
+                tbody.innerHTML = '';
+
+                if (citasClinica.length > 0) {
+                    citasClinica.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${c.paciente}</strong></td>
+                                <td>${c.estudio}</td>
+                                <td>${new Date(c.fecha_cita).toLocaleDateString()}</td>
+                                <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${c.codigo_qr}</span></td>
+                                <td><span style="color:#28a745; font-weight:bold;">Validado</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#777;">Aún no se registran pacientes asignados a esta sede este mes.</td></tr>';
+                }
+
+            } else {
+                alert('⚠️ No se encontró un convenio activo registrado con este correo.');
+            }
+        } catch (err) {
+            alert('Error al consultar datos.');
+        }
+    });
+</script>
+
+</body>
+</html>
