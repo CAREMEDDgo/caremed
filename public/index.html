@@ -69,6 +69,7 @@
     <nav>
         <a href="/" class="active">💳 Membresías y Tienda</a>
         <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
+        <a href="/farmacias.html">💊 Farmacias Convenio</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
     </nav>
 </header>
@@ -141,7 +142,6 @@
         <div class="schedule-grid" id="grid-estudios"></div>
     </div>
 
-    <!-- Estudios Individuales A la Carta -->
     <div class="single-section">
         <h2 style="text-align: center; color: #0056b3;">🛒 Comprar Estudios Individuales (A la carta)</h2>
         <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Si solo necesitas un estudio específico, cómpralo con precio preferencial y consúltalo en tu panel:</p>
@@ -312,7 +312,6 @@
         estudioSeleccionado = { nombre: nombreEstudio, precio };
         document.getElementById('modal-single-info').innerText = `${nombreEstudio} - $${precio} MXN`;
         
-        // Si ya hay sesión iniciada, ocultamos los campos de crear cuenta
         const userId = localStorage.getItem('caremed_user_id');
         if (userId) {
             document.getElementById('bloque-datos-nuevo-usr').style.display = 'none';
@@ -331,7 +330,6 @@
         document.getElementById(idModal).style.display = 'none';
     }
 
-    // Registro Suscripción
     document.getElementById('form-suscripcion').addEventListener('submit', async (e) => {
         e.preventDefault();
         const datos = {
@@ -360,13 +358,11 @@
         }
     });
 
-    // Formulario Compra Individual
     document.getElementById('form-individual').addEventListener('submit', async (e) => {
         e.preventDefault();
         let userId = localStorage.getItem('caremed_user_id');
         let nombrePaciente = '';
 
-        // Si NO hay usuario iniciado, lo registramos primero
         if (!userId) {
             const datosReg = {
                 nombre: document.getElementById('single-nombre').value,
@@ -396,7 +392,6 @@
             localStorage.setItem('caremed_user_id', userId);
         }
 
-        // Agendar cita individual ligada al usuario
         const citaData = {
             usuario_id: userId,
             paciente: nombrePaciente || 'Cliente Registrado',
