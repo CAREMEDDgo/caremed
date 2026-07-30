@@ -56,17 +56,34 @@
             <div class="kpi-value" id="kpi-usuarios">0</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Ingresos Membresías</div>
-            <div class="kpi-value" id="kpi-ingresos">$0 MXN</div>
+            <div class="kpi-title">Ingresos Membresías Personas</div>
+            <div class="kpi-value" id="kpi-ingresos-personas">$0 MXN</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Comisiones B2B por Cobrar</div>
-            <div class="kpi-value" id="kpi-comisiones">$0 MXN</div>
+            <div class="kpi-title">Ingresos Convenios Empresas</div>
+            <div class="kpi-value" id="kpi-ingresos-empresas">$0 MXN</div>
         </div>
     </div>
 
     <div class="panel-card">
-        <h2>👥 Registro General de Usuarios y Suscripciones</h2>
+        <h2>🏢 Convenios B2B Activos con Empresas y Clínicas</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Empresa / Clínica</th>
+                    <th>Contacto</th>
+                    <th>Correo</th>
+                    <th>Plan Contratado</th>
+                    <th>Visitas Garantizadas</th>
+                    <th>Monto Mensual</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-empresas"></tbody>
+        </table>
+    </div>
+
+    <div class="panel-card">
+        <h2>👥 Registro General de Suscriptores (Personas)</h2>
         <table>
             <thead>
                 <tr>
@@ -85,7 +102,7 @@
     </div>
 
     <div class="panel-card">
-        <h2>🏦 Concentrado B2B: Comisiones a Cobrar a Establecimientos</h2>
+        <h2>🏦 Concentrado B2B: Comisiones por Canalización de Pacientes</h2>
         <table>
             <thead>
                 <tr>
@@ -116,24 +133,44 @@
         const res = await fetch('/api/admin/resumen');
         const data = await res.json();
 
-        // 1. Mostrar total de usuarios registrados
+        // 1. Mostrar total de usuarios personas
         document.getElementById('kpi-usuarios').innerText = data.suscriptores ? data.suscriptores.length : 0;
         
-        // 2. Calcular total acumulado de ingresos
-        let totalIngresos = 0;
+        // 2. Ingresos Personas
+        let totalPersonas = 0;
         if (data.suscriptores) {
-            totalIngresos = data.suscriptores.reduce((sum, u) => sum + (parseFloat(u.monto) || 0), 0);
+            totalPersonas = data.suscriptores.reduce((sum, u) => sum + (parseFloat(u.monto) || 0), 0);
         }
-        document.getElementById('kpi-ingresos').innerText = `$${totalIngresos.toLocaleString()} MXN`;
+        document.getElementById('kpi-ingresos-personas').innerText = `$${totalPersonas.toLocaleString()} MXN`;
 
-        // 3. Calcular comisiones B2B
-        let totalComisiones = 0;
-        if (data.citas) {
-            totalComisiones = data.citas.reduce((sum, c) => sum + (parseFloat(c.comision_generada) || 0), 0);
+        // 3. Ingresos Empresas
+        let totalEmpresas = 0;
+        if (data.empresas) {
+            totalEmpresas = data.empresas.reduce((sum, e) => sum + (parseFloat(e.monto) || 0), 0);
         }
-        document.getElementById('kpi-comisiones').innerText = `$${totalComisiones.toLocaleString()} MXN`;
+        document.getElementById('kpi-ingresos-empresas').innerText = `$${totalEmpresas.toLocaleString()} MXN`;
 
-        // Llenar Tabla Suscriptores
+        // Tabla Empresas
+        const tbodyEmp = document.getElementById('tabla-empresas');
+        tbodyEmp.innerHTML = '';
+        if (data.empresas && data.empresas.length > 0) {
+            data.empresas.forEach(e => {
+                tbodyEmp.innerHTML += `
+                    <tr>
+                        <td><strong>${e.empresa_nombre}</strong></td>
+                        <td>${e.contacto_nombre}</td>
+                        <td>${e.correo}</td>
+                        <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${e.plan_empresa}</span></td>
+                        <td><strong>${e.visitas_garantizadas} visitas/mes</strong></td>
+                        <td><strong style="color:#28a745;">$${parseFloat(e.monto).toLocaleString()} MXN</strong></td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbodyEmp.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay convenios empresariales registrados aún.</td></tr>';
+        }
+
+        // Tabla Suscriptores
         const tbodySub = document.getElementById('tabla-suscriptores');
         tbodySub.innerHTML = '';
         if (data.suscriptores && data.suscriptores.length > 0) {
@@ -155,7 +192,7 @@
             tbodySub.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
         }
 
-        // Llenar Tabla Comisiones
+        // Tabla Comisiones
         const tbodyCom = document.getElementById('tabla-comisiones');
         tbodyCom.innerHTML = '';
         if (data.comisiones && data.comisiones.length > 0) {
@@ -174,7 +211,7 @@
     }
 
     async function eliminarSuscripcion(id) {
-        if (confirm("¿Estás seguro de eliminar este usuario/suscripción?")) {
+        if (confirm("¿Estás seguro de eliminar este usuario?")) {
             await fetch(`/api/admin/suscripcion/${id}`, { method: 'DELETE' });
             cargarAdmin();
         }

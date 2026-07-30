@@ -14,11 +14,11 @@
         nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
         nav a:hover, nav a.active { background: #0056b3; color: white; }
 
-        .hero { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; text-align: center; padding: 50px 20px; }
-        .hero h1 { font-size: 32px; margin-bottom: 12px; }
-        .hero p { font-size: 16px; max-width: 700px; margin: 0 auto; opacity: 0.9; }
+        .hero { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; text-align: center; padding: 45px 20px; }
+        .hero h1 { font-size: 30px; margin-bottom: 10px; }
+        .hero p { font-size: 15px; max-width: 700px; margin: 0 auto; opacity: 0.9; }
 
-        .container { max-width: 1100px; margin: -30px auto 40px auto; padding: 0 20px; z-index: 10; position: relative; }
+        .container { max-width: 1100px; margin: -25px auto 40px auto; padding: 0 20px; z-index: 10; position: relative; }
         
         .toggle-container { text-align: center; margin-bottom: 25px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .toggle-btn { background: #eef5ff; color: #0056b3; border: 1px solid #0056b3; padding: 8px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; margin: 0 5px; transition: 0.2s; }
@@ -38,20 +38,11 @@
         
         .btn-subscribe { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        .schedule-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .gender-selector { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-        .btn-gender { padding: 8px 20px; border-radius: 20px; border: 1px solid #ccc; background: #f8f9fa; cursor: pointer; font-weight: bold; }
-        .btn-gender.active { background: #0056b3; color: white; border-color: #0056b3; }
-
-        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
-        .month-box { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; font-size: 13px; }
-        .month-name { font-weight: bold; color: #0056b3; display: block; margin-bottom: 3px; }
-
         .single-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .table-single { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .table-single th, .table-single td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
+        .table-single th, .table-single td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; font-size: 13px; }
         .table-single th { background: #0056b3; color: white; }
-        .btn-buy-single { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-buy-single { background: #28a745; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
@@ -67,61 +58,65 @@
 <header>
     <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
     <nav>
-        <a href="/" class="active">💳 Membresías y Tienda</a>
+        <a href="/" class="active">💳 Membresías Personas</a>
+        <a href="/empresas.html">🏢 Empresas y Convenios</a>
         <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
-        <a href="/farmacias.html">💊 Farmacias Convenio</a>
+        <a href="/farmacias.html">💊 Farmacias Aliadas</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
     </nav>
 </header>
 
 <section class="hero">
     <h1>Salud Preventiva y Estudios Médicos en Durango</h1>
-    <p>Suscríbete a un plan anual/mensual o adquiere estudios individuales a precio preferencial en clínicas afiliadas.</p>
+    <p>Suscríbete a un plan de salud preventiva o adquiere tus estudios de laboratorio individuales con precios preferenciales.</p>
 </section>
 
 <div class="container">
     
     <div class="toggle-container">
         <span>Selecciona la Modalidad de Pago: </span>
-        <button class="toggle-btn active" id="btn-pago-anual" onclick="cambiarModalidad('Anual')">Pago Anual (Ahorras más)</button>
-        <button class="toggle-btn" id="btn-pago-mensual" onclick="cambiarModalidad('Mensual')">Pago Mensual</button>
+        <button class="toggle-btn active" id="btn-pago-anual" onclick="cambiarModalidad('Anual')">Modalidad Anual (Ahorras más)</button>
+        <button class="toggle-btn" id="btn-pago-mensual" onclick="cambiarModalidad('Mensual')">Modalidad Mensual</button>
     </div>
 
     <div class="plans-grid">
+        <!-- PLAN ESENCIAL -->
         <div class="plan-card">
             <div>
                 <div class="plan-title">Plan Esencial</div>
-                <div class="plan-price" id="precio-esencial">$2,999 <span>/ año</span></div>
-                <div class="savings" id="ahorro-esencial">Ahorras $589 vs pago mensual</div>
+                <div class="plan-price" id="precio-esencial">$4,999 <span>/ Anual</span></div>
+                <div class="savings" id="ahorro-esencial">Ahorras $989 MXN vs pago mensual</div>
                 <ul class="benefits-list">
-                    <li>✅ 1 estudio mensual (12 al año)</li>
+                    <li>✅ <strong>12 estudios anuales</strong></li>
                     <li>✅ Laboratorios económicos afiliados</li>
-                    <li>✅ Historial digital y código QR</li>
+                    <li>✅ Historial clínico digital y código QR</li>
                 </ul>
             </div>
             <button class="btn-subscribe" onclick="abrirModalSuscripcion('Esencial')">Contratar Esencial</button>
         </div>
 
+        <!-- PLAN PLUS -->
         <div class="plan-card featured">
             <span class="badge">MÁS POPULAR</span>
             <div>
                 <div class="plan-title">Plan Plus</div>
-                <div class="plan-price" id="precio-plus">$4,199 <span>/ año</span></div>
-                <div class="savings" id="ahorro-plus">Ahorras $829 vs pago mensual</div>
+                <div class="plan-price" id="precio-plus">$6,999 <span>/ Anual</span></div>
+                <div class="savings" id="ahorro-plus">Ahorras $1,389 MXN vs pago mensual</div>
                 <ul class="benefits-list">
                     <li>✅ Todo lo del Plan Esencial</li>
-                    <li>✅ Atención prioritaria e Interpretación básica</li>
+                    <li>✅ Atención prioritaria e interpretación</li>
                     <li>🏥 Salud Digna, Chopo, Laboratorio Juárez</li>
                 </ul>
             </div>
             <button class="btn-subscribe" style="background:#28a745;" onclick="abrirModalSuscripcion('Plus')">Contratar Plus</button>
         </div>
 
+        <!-- PLAN PREMIUM -->
         <div class="plan-card">
             <div>
                 <div class="plan-title">Plan Premium</div>
-                <div class="plan-price" id="precio-premium">$6,999 <span>/ año</span></div>
-                <div class="savings" id="ahorro-premium">Ahorras $1,389 vs pago mensual</div>
+                <div class="plan-price" id="precio-premium">$8,899 <span>/ Anual</span></div>
+                <div class="savings" id="ahorro-premium">Ahorras $1,889 MXN vs pago mensual</div>
                 <ul class="benefits-list">
                     <li>✅ Todo lo del Plan Plus</li>
                     <li>✅ Expediente avanzado e interpretación médica</li>
@@ -132,47 +127,43 @@
         </div>
     </div>
 
-    <div class="schedule-section">
-        <h2 style="text-align: center; color: #0056b3;">📅 Programa Anual de Estudios Preventivos</h2>
-        <div class="gender-selector">
-            <button class="btn-gender active" id="btn-hombre" onclick="cambiarGenero('Hombre')">👨🏻 Ver Programa Hombre</button>
-            <button class="btn-gender" id="btn-mujer" onclick="cambiarGenero('Mujer')">👩🏻 Ver Programa Mujer</button>
-        </div>
-        
-        <div class="schedule-grid" id="grid-estudios"></div>
-    </div>
-
+    <!-- ESTUDIOS INDIVIDUALES A LA CARTA -->
     <div class="single-section">
-        <h2 style="text-align: center; color: #0056b3;">🛒 Comprar Estudios Individuales (A la carta)</h2>
-        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Si solo necesitas un estudio específico, cómpralo con precio preferencial y consúltalo en tu panel:</p>
+        <h2 style="text-align: center; color: #0056b3;">🛒 Estudios Médicos Disponibles (A la carta)</h2>
+        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Adquiere estudios individuales a precio preferencial y consúltalos desde tu panel de paciente:</p>
         
         <table class="table-single">
             <thead>
                 <tr>
-                    <th>Estudio Médico</th>
+                    <th>Estudio Médico Disponible</th>
                     <th>Precio Clínica</th>
-                    <th>Precio en App</th>
+                    <th>Precio App Preferencial</th>
                     <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Biometría Hemática</td><td>$250</td><td><strong>$230 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Biometría Hemática', 230)">Comprar Ahora</button></td></tr>
-                <tr><td>Química Sanguínea</td><td>$380</td><td><strong>$350 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Química Sanguínea', 350)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil de Lípidos</td><td>$420</td><td><strong>$390 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil de Lípidos', 390)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil Tiroideo</td><td>$700</td><td><strong>$650 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil Tiroideo', 650)">Comprar Ahora</button></td></tr>
-                <tr><td>Antígeno Prostático (PSA - Hombre)</td><td>$600</td><td><strong>$560 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Antígeno Prostático (PSA)', 560)">Comprar Ahora</button></td></tr>
-                <tr><td>Papanicolaou (Mujer)</td><td>$550</td><td><strong>$520 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Papanicolaou', 520)">Comprar Ahora</button></td></tr>
-                <tr><td>Mastografía (Mujer)</td><td>$1,000</td><td><strong>$930 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Mastografía', 930)">Comprar Ahora</button></td></tr>
+                <tr><td>Biometría Hemática Completa</td><td>$250</td><td><strong>$230 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Biometría Hemática Completa', 230)">Comprar Ahora</button></td></tr>
+                <tr><td>Química Sanguínea (6 Elementos)</td><td>$380</td><td><strong>$350 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Química Sanguínea (6 Elementos)', 350)">Comprar Ahora</button></td></tr>
+                <tr><td>Examen General de Orina (EGO)</td><td>$180</td><td><strong>$150 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Examen General de Orina (EGO)', 150)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil de Lípidos Completo</td><td>$420</td><td><strong>$390 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil de Lípidos Completo', 390)">Comprar Ahora</button></td></tr>
+                <tr><td>Pruebas de Función Hepática y Renal</td><td>$520</td><td><strong>$480 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Pruebas de Función Hepática y Renal', 480)">Comprar Ahora</button></td></tr>
+                <tr><td>Ácido Úrico y Detección Metabólica</td><td>$220</td><td><strong>$190 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Ácido Úrico y Detección Metabólica', 190)">Comprar Ahora</button></td></tr>
+                <tr><td>Antígeno Prostático Específico (PSA - Hombre)</td><td>$600</td><td><strong>$560 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Antígeno Prostático (PSA)', 560)">Comprar Ahora</button></td></tr>
+                <tr><td>Papanicolaou y Citología Cervical (Mujer)</td><td>$550</td><td><strong>$520 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Papanicolaou y Citología Cervical', 520)">Comprar Ahora</button></td></tr>
+                <tr><td>Electrocardiograma de Reposo</td><td>$450</td><td><strong>$410 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Electrocardiograma de Reposo', 410)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil Tiroideo Completo (TSH, T3, T4)</td><td>$700</td><td><strong>$650 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil Tiroideo Completo', 650)">Comprar Ahora</button></td></tr>
+                <tr><td>Glucosa y Hemoglobina Glicosilada (HbA1c)</td><td>$390</td><td><strong>$360 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Glucosa y HbA1c', 360)">Comprar Ahora</button></td></tr>
+                <tr><td>Coproparasitoscópico y Cultivo</td><td>$200</td><td><strong>$180 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Coproparasitoscópico y Cultivo', 180)">Comprar Ahora</button></td></tr>
             </tbody>
         </table>
     </div>
 
 </div>
 
-<!-- Modal Registro/Contratación Membresía -->
+<!-- Modal Suscripción Persona -->
 <div id="modal-suscripcion" class="modal">
     <div class="modal-content">
-        <h3>💳 Registro y Contratación CAREMED</h3>
+        <h3>💳 Registro de Membresía</h3>
         <p id="modal-plan-info" style="font-size: 12px; color: #0056b3; font-weight: bold; margin-bottom: 5px;"></p>
         <form id="form-suscripcion">
             <label>Nombre Completo</label>
@@ -187,14 +178,14 @@
             <label>Teléfono (WhatsApp)</label>
             <input type="tel" id="sub-telefono" placeholder="618 123 4567" required>
 
-            <label>Sexo / Género (Para calendario médico)</label>
+            <label>Sexo / Género</label>
             <select id="sub-sexo">
                 <option value="Hombre">Hombre</option>
                 <option value="Mujer">Mujer</option>
             </select>
 
             <div class="modal-btns">
-                <button type="submit" class="btn-confirm">Crear Cuenta e Iniciar</button>
+                <button type="submit" class="btn-confirm">Confirmar e Iniciar Sesión</button>
                 <button type="button" class="btn-cancel" onclick="cerrarModal('modal-suscripcion')">Cancelar</button>
             </div>
         </form>
@@ -221,7 +212,7 @@
 
             <div id="bloque-datos-nuevo-usr">
                 <hr style="margin: 12px 0; border: 0; border-top: 1px solid #eee;">
-                <p style="font-size: 11px; color: #666;">Crea tu cuenta para guardar esta cita y tu código QR:</p>
+                <p style="font-size: 11px; color: #666;">Crea tu cuenta para guardar tu cita y código QR:</p>
 
                 <label>Nombre Completo</label>
                 <input type="text" id="single-nombre" placeholder="Ej. María Gómez">
@@ -246,27 +237,8 @@
 
 <script>
     let modalidadActual = 'Anual';
-    let generoActual = 'Hombre';
     let planSeleccionado = {};
     let estudioSeleccionado = {};
-
-    const programaHombre = [
-        { mes: 'Enero', estudio: 'Biometría Hemática' }, { mes: 'Febrero', estudio: 'Química Sanguínea' },
-        { mes: 'Marzo', estudio: 'Examen General de Orina' }, { mes: 'Abril', estudio: 'Perfil de Lípidos' },
-        { mes: 'Mayo', estudio: 'Función Hepática' }, { mes: 'Junio', estudio: 'Función Renal' },
-        { mes: 'Julio', estudio: 'Ácido Úrico' }, { mes: 'Agosto', estudio: 'Antígeno Prostático (PSA)' },
-        { mes: 'Septiembre', estudio: 'Electrocardiograma' }, { mes: 'Octubre', estudio: 'Perfil Tiroideo' },
-        { mes: 'Noviembre', estudio: 'Glucosa y HbA1c' }, { mes: 'Diciembre', estudio: 'Coproparasitoscópico' }
-    ];
-
-    const programaMujer = [
-        { mes: 'Enero', estudio: 'Biometría Hemática' }, { mes: 'Febrero', estudio: 'Química Sanguínea' },
-        { mes: 'Marzo', estudio: 'Examen General de Orina' }, { mes: 'Abril', estudio: 'Perfil de Lípidos' },
-        { mes: 'Mayo', estudio: 'Función Hepática' }, { mes: 'Junio', estudio: 'Función Renal' },
-        { mes: 'Julio', estudio: 'Perfil Hormonal Básico' }, { mes: 'Agosto', estudio: 'Papanicolaou' },
-        { mes: 'Septiembre', estudio: 'Mastografía / US Mamario' }, { mes: 'Octubre', estudio: 'Perfil Tiroideo' },
-        { mes: 'Noviembre', estudio: 'Glucosa y HbA1c' }, { mes: 'Diciembre', estudio: 'Coproparasitoscópico' }
-    ];
 
     function cambiarModalidad(tipo) {
         modalidadActual = tipo;
@@ -274,34 +246,27 @@
         document.getElementById('btn-pago-mensual').classList.toggle('active', tipo === 'Mensual');
 
         if (tipo === 'Anual') {
-            document.getElementById('precio-esencial').innerHTML = '$2,999 <span>/ año</span>';
-            document.getElementById('precio-plus').innerHTML = '$4,199 <span>/ año</span>';
-            document.getElementById('precio-premium').innerHTML = '$6,999 <span>/ año</span>';
+            document.getElementById('precio-esencial').innerHTML = '$4,999 <span>/ Anual</span>';
+            document.getElementById('precio-plus').innerHTML = '$6,999 <span>/ Anual</span>';
+            document.getElementById('precio-premium').innerHTML = '$8,899 <span>/ Anual</span>';
+            document.getElementById('ahorro-esencial').innerText = 'Ahorras $989 MXN vs pago mensual';
+            document.getElementById('ahorro-plus').innerText = 'Ahorras $1,389 MXN vs pago mensual';
+            document.getElementById('ahorro-premium').innerText = 'Ahorras $1,889 MXN vs pago mensual';
         } else {
-            document.getElementById('precio-esencial').innerHTML = '$299 <span>/ mes</span>';
-            document.getElementById('precio-plus').innerHTML = '$419 <span>/ mes</span>';
-            document.getElementById('precio-premium').innerHTML = '$699 <span>/ mes</span>';
+            document.getElementById('precio-esencial').innerHTML = '$499 <span>/ mes</span>';
+            document.getElementById('precio-plus').innerHTML = '$699 <span>/ mes</span>';
+            document.getElementById('precio-premium').innerHTML = '$899 <span>/ mes</span>';
+            document.getElementById('ahorro-esencial').innerText = 'Suscripción recurrente mensual';
+            document.getElementById('ahorro-plus').innerText = 'Suscripción recurrente mensual';
+            document.getElementById('ahorro-premium').innerText = 'Suscripción recurrente mensual';
         }
     }
 
-    function cambiarGenero(gen) {
-        generoActual = gen;
-        document.getElementById('btn-hombre').classList.toggle('active', gen === 'Hombre');
-        document.getElementById('btn-mujer').classList.toggle('active', gen === 'Mujer');
-
-        const lista = gen === 'Hombre' ? programaHombre : programaMujer;
-        const grid = document.getElementById('grid-estudios');
-        grid.innerHTML = '';
-        lista.forEach(i => {
-            grid.innerHTML += `<div class="month-box"><span class="month-name">${i.mes}</span>${i.estudio}</div>`;
-        });
-    }
-
     function abrirModalSuscripcion(plan) {
-        let monto = 2999;
-        if (plan === 'Esencial') monto = modalidadActual === 'Anual' ? 2999 : 299;
-        if (plan === 'Plus') monto = modalidadActual === 'Anual' ? 4199 : 419;
-        if (plan === 'Premium') monto = modalidadActual === 'Anual' ? 6999 : 699;
+        let monto = 4999;
+        if (plan === 'Esencial') monto = modalidadActual === 'Anual' ? 4999 : 499;
+        if (plan === 'Plus') monto = modalidadActual === 'Anual' ? 6999 : 699;
+        if (plan === 'Premium') monto = modalidadActual === 'Anual' ? 8899 : 899;
 
         planSeleccionado = { plan, monto, modalidad: modalidadActual };
         document.getElementById('modal-plan-info').innerText = `Plan Seleccionado: ${plan} (${modalidadActual}: $${monto} MXN)`;
@@ -350,11 +315,11 @@
         });
         const json = await res.json();
         if (res.ok) {
-            alert(`🎉 ¡Cuenta creada con éxito!\n\nRedirigiendo a tu panel...`);
+            alert(`🎉 ¡Suscripción registrada con éxito!\n\nRedirigiendo a tu panel...`);
             localStorage.setItem('caremed_user_id', json.usuario.id);
             window.location.href = `/paciente-dashboard.html`;
         } else {
-            alert(`⚠️ Error: ${json.error}`);
+            alert(`⚠️ ${json.error}`);
         }
     });
 
@@ -370,7 +335,7 @@
                 password: document.getElementById('single-pass').value,
                 telefono: document.getElementById('single-telefono').value,
                 sexo: 'General',
-                plan: 'Sin Membresia (Individual)',
+                plan: 'Individual',
                 modalidad_pago: 'Única',
                 monto: 0
             };
@@ -383,7 +348,7 @@
             const jsonReg = await resReg.json();
 
             if (!resReg.ok) {
-                alert(`⚠️ Error al crear cuenta: ${jsonReg.error}`);
+                alert(`⚠️ Error: ${jsonReg.error}`);
                 return;
             }
 
@@ -410,12 +375,10 @@
         const jsonCita = await resCita.json();
 
         if (resCita.ok) {
-            alert(`🎉 ¡Compra exitosa!\n\nTu estudio "${estudioSeleccionado.nombre}" fue agendado con el código QR: ${jsonCita.cita.codigo_qr}.\nRedirigiendo a tu panel para ver tu cita...`);
+            alert(`🎉 ¡Estudio agendado!\n\nCódigo QR: ${jsonCita.cita.codigo_qr}.\nRedirigiendo a tu panel...`);
             window.location.href = `/paciente-dashboard.html`;
         }
     });
-
-    cambiarGenero('Hombre');
 </script>
 
 </body>

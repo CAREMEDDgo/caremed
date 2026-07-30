@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.R.E.M.E.D. - Empresas y Clínicas Convenio</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: #f4f7f9; color: #333; }
+        
+        header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
+        .logo-img { height: 42px; object-fit: contain; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
+        nav a:hover, nav a.active { background: #0056b3; color: white; }
+
+        .hero { background: linear-gradient(135deg, #004085, #0056b3); color: white; text-align: center; padding: 50px 20px; }
+        .hero h1 { font-size: 30px; margin-bottom: 10px; }
+        .hero p { font-size: 15px; max-width: 750px; margin: 0 auto; opacity: 0.9; }
+
+        .container { max-width: 1100px; margin: -25px auto 40px auto; padding: 0 20px; position: relative; z-index: 10; }
+
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .plan-card { background: white; border-radius: 14px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; border: 2px solid #e0e0e0; }
+        .plan-card.featured { border-color: #28a745; position: relative; }
+        .badge { position: absolute; top: -12px; right: 20px; background: #28a745; color: white; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px; }
+
+        .plan-title { font-size: 22px; color: #0056b3; font-weight: bold; }
+        .plan-price { font-size: 28px; color: #28a745; font-weight: bold; margin: 10px 0 5px 0; }
+
+        .benefits-list { list-style: none; margin-bottom: 20px; font-size: 13px; color: #555; }
+        .benefits-list li { margin-bottom: 8px; }
+
+        .btn-subscribe { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
+        .modal-content label { font-size: 12px; font-weight: bold; color: #444; display: block; margin-top: 8px; }
+        .modal-content input { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+        .btn-confirm { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-cancel { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
+    <nav>
+        <a href="/">💳 Membresías Personas</a>
+        <a href="/empresas.html" class="active">🏢 Empresas y Convenios</a>
+        <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
+        <a href="/farmacias.html">💊 Farmacias Aliadas</a>
+        <a href="/admin.html">🛡️ Administración B2B</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Convenios Corporativos y Red de Clínicas Afiliadas</h1>
+    <p>Asegura un flujo constante de pacientes mensuales para tu clínica o brinda cobertura de salud a tus empleados con C.A.R.E.M.E.D.</p>
+</section>
+
+<div class="container">
+    <div class="plans-grid">
+        
+        <!-- PLAN BÁSICO -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Básico</div>
+                <div class="plan-price">$2,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 20 visitas mensuales</strong></li>
+                    <li>✅ Promoción en directorio y mapa oficial</li>
+                    <li>✅ Facturación y reporte mensual</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" onclick="abrirModalEmpresa('Básico', 2499, 20)">Contratar Básico</button>
+        </div>
+
+        <!-- PLAN MEDIO -->
+        <div class="plan-card featured">
+            <span class="badge">RECOMENDADO</span>
+            <div>
+                <div class="plan-title">Plan Medio</div>
+                <div class="plan-price">$5,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 40 visitas mensuales</strong></li>
+                    <li>✅ Prioridad en recomendaciones de la App</li>
+                    <li>✅ Panel de estadísticas de pacientes</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" style="background:#28a745;" onclick="abrirModalEmpresa('Medio', 5499, 40)">Contratar Medio</button>
+        </div>
+
+        <!-- PLAN PREMIUM -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Premium</div>
+                <div class="plan-price">$7,499 <span>/ mes</span></div>
+                <ul class="benefits-list">
+                    <li>✅ <strong>Garantiza 60 visitas mensuales</strong></li>
+                    <li>✅ Cobertura destacada en Durango</li>
+                    <li>✅ Canalización médica prioritaria</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" onclick="abrirModalEmpresa('Premium', 7499, 60)">Contratar Premium</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Suscripción Empresa -->
+<div id="modal-empresa" class="modal">
+    <div class="modal-content">
+        <h3>🏢 Registro de Convenio Corporativo</h3>
+        <p id="modal-empresa-info" style="font-size: 12px; color: #0056b3; font-weight: bold; margin-bottom: 8px;"></p>
+        <form id="form-empresa">
+            <label>Nombre de la Empresa o Clínica</label>
+            <input type="text" id="emp-nombre" placeholder="Ej. Clínica San Francisco" required>
+
+            <label>Nombre del Rep. Legal o Contacto</label>
+            <input type="text" id="emp-contacto" placeholder="Ej. Dr. Roberto Gómez" required>
+
+            <label>Correo Electrónico Empresarial</label>
+            <input type="email" id="emp-correo" placeholder="contacto@empresa.com" required>
+
+            <label>Teléfono de Contacto</label>
+            <input type="tel" id="emp-telefono" placeholder="618 123 4567" required>
+
+            <div class="modal-btns">
+                <button type="submit" class="btn-confirm">Activar Convenio</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let planEmpresaSeleccionado = {};
+
+    function abrirModalEmpresa(plan, monto, visitas) {
+        planEmpresaSeleccionado = { plan, monto, visitas };
+        document.getElementById('modal-empresa-info').innerText = `Plan ${plan}: $${monto} MXN/mes (${visitas} visitas garantizadas)`;
+        document.getElementById('modal-empresa').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-empresa').style.display = 'none';
+    }
+
+    document.getElementById('form-empresa').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const datos = {
+            empresa_nombre: document.getElementById('emp-nombre').value,
+            contacto_nombre: document.getElementById('emp-contacto').value,
+            correo: document.getElementById('emp-correo').value,
+            telefono: document.getElementById('emp-telefono').value,
+            plan_empresa: planEmpresaSeleccionado.plan,
+            visitas_garantizadas: planEmpresaSeleccionado.visitas,
+            monto: planEmpresaSeleccionado.monto
+        };
+
+        const res = await fetch('/api/empresas/suscripcion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (res.ok) {
+            alert('🎉 ¡Convenio registrado con éxito!\n\nUn ejecutivo de C.A.R.E.M.E.D. se pondrá en contacto para formalizar la alianza.');
+            cerrarModal();
+            window.location.href = '/admin.html';
+        }
+    });
+</script>
+
+</body>
+</html>

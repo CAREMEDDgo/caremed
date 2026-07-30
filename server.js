@@ -14,15 +14,16 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Inicialización de tablas y columnas
-async function inicializarTablas() {
+// Inicializar la estructura completa de PostgreSQL desde cero
+async function inicializarEstructura() {
     try {
+        // Borrar y recrear catálogo de clinicas si es necesario para sincronización limpia
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios_membresias (
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(150) NOT NULL,
-                correo VARCHAR(150),
-                password VARCHAR(100),
+                correo VARCHAR(150) UNIQUE NOT NULL,
+                password VARCHAR(100) NOT NULL,
                 telefono VARCHAR(50) NOT NULL,
                 sexo VARCHAR(20) DEFAULT 'Hombre',
                 plan VARCHAR(50) NOT NULL,
@@ -30,6 +31,18 @@ async function inicializarTablas() {
                 monto NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 estudios_restantes INT DEFAULT 12,
                 fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS convenios_empresas (
+                id SERIAL PRIMARY KEY,
+                empresa_nombre VARCHAR(150) NOT NULL,
+                contacto_nombre VARCHAR(150) NOT NULL,
+                correo VARCHAR(150) NOT NULL,
+                telefono VARCHAR(50) NOT NULL,
+                plan_empresa VARCHAR(50) NOT NULL,
+                visitas_garantizadas INT NOT NULL,
+                monto NUMERIC(10, 2) NOT NULL,
+                fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
             CREATE TABLE IF NOT EXISTS clinicas_convenio (
@@ -58,7 +71,7 @@ async function inicializarTablas() {
             );
         `);
 
-        // Sincronizar catálogo de Clínicas y Hospitales en Durango
+        // Recargar el catálogo completo de establecimientos autorizados en Durango
         await pool.query('DELETE FROM clinicas_convenio');
         await pool.query(`
             INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
@@ -79,14 +92,14 @@ async function inicializarTablas() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL inicializada con clínicas.");
+        console.log("⚡ Base de datos PostgreSQL inicializada con estructura limpia e impecable.");
     } catch (err) {
-        console.error("Error al inicializar tablas:", err);
+        console.error("Error al inicializar PostgreSQL:", err);
     }
 }
-inicializarTablas();
+inicializarEstructura();
 
-/* ==================== ENDPOINTS AUTENTICACIÓN Y USUARIOS ==================== */
+/* ==================== RUTAS DE AUTENTICACIÓN Y PERSONAS ==================== */
 
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
@@ -131,19 +144,32 @@ app.get('/api/usuarios/:id', async (req, res) => {
     }
 });
 
-/* ==================== ENDPOINT CLINICAS GARANTIZADO ==================== */
+/* ==================== RUTAS B2B EMPRESAS Y CLINICAS ==================== */
+
+app.post('/api/empresas/suscripcion', async (req, res) => {
+    const { empresa_nombre, contacto_nombre, correo, telefono, plan_empresa, visitas_garantizadas, monto } = req.body;
+    try {
+        const result = await pool.query(
+            `INSERT INTO convenios_empresas (empresa_nombre, contacto_nombre, correo, telefono, plan_empresa, visitas_garantizadas, monto)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [empresa_nombre, contacto_nombre, correo, telefono, plan_empresa, visitas_garantizadas, parseFloat(monto)]
+        );
+        res.json({ exito: true, empresa: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/* ==================== CONSULTA DE CLINICAS Y CITAS ==================== */
 
 app.get('/api/clinicas', async (req, res) => {
     try {
-        // Retorna siempre todas las clínicas para asegurar disponibilidad absoluta
         const result = await pool.query('SELECT * FROM clinicas_convenio ORDER BY id ASC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-
-/* ==================== ENDPOINTS CITAS ==================== */
 
 app.post('/api/citas/agendar', async (req, res) => {
     const { usuario_id, paciente, tipo_compra, estudio, monto_pagado, clinica, fecha_cita } = req.body;
@@ -194,11 +220,12 @@ app.get('/api/citas/usuario/:id', async (req, res) => {
     }
 });
 
-/* ==================== ENDPOINT ADMIN B2B ==================== */
+/* ==================== RESUMEN DE ADMINISTRACIÓN B2B ==================== */
 
 app.get('/api/admin/resumen', async (req, res) => {
     try {
         const suscriptores = await pool.query('SELECT * FROM usuarios_membresias ORDER BY id DESC');
+        const empresas = await pool.query('SELECT * FROM convenios_empresas ORDER BY id DESC');
         const citas = await pool.query('SELECT * FROM citas_estudios ORDER BY id DESC');
         const comisionesPorClinica = await pool.query(`
             SELECT clinica, COUNT(*) as total_pacientes, COALESCE(SUM(comision_generada), 0) as total_comision_a_cobrar
@@ -207,6 +234,7 @@ app.get('/api/admin/resumen', async (req, res) => {
 
         res.json({ 
             suscriptores: suscriptores.rows, 
+            empresas: empresas.rows,
             citas: citas.rows, 
             comisiones: comisionesPorClinica.rows 
         });
@@ -225,4 +253,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor CAREMED activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor C.A.R.E.M.E.D. corriendo en puerto ${PORT}`));
