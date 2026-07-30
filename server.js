@@ -92,6 +92,28 @@ async function inicializarEstructura() {
             END $$;
         `);
 
+        // Recargar catálogo fijo de clínicas si la tabla está vacía o restaurar base
+        const clinicasExistentes = await pool.query('SELECT COUNT(*) FROM clinicas_convenio');
+        if (parseInt(clinicasExistentes.rows[0].count) === 0) {
+            await pool.query(`
+                INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
+                ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
+                ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
+                ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
+                ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
+                ('Laboratorio Clínico del Norte', 'Económico', 'Esencial', 'Blvd. Jose Maria Morelos, Durango', 24.0380, -104.6510, 15.00),
+                ('Laboratorio del Centro', 'Económico', 'Esencial', 'Calle Constitución #210, Centro', 24.0260, -104.6670, 15.00),
+                ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
+                ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
+                ('Laboratorio del Lago', 'Medio', 'Plus', 'Fracc. Los Remedios, Durango', 24.0350, -104.6490, 12.00),
+                ('Laboratorio Biomédico Durango', 'Medio', 'Plus', 'Av. Felipe Pescador, Durango', 24.0310, -104.6590, 12.00),
+                ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
+                ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
+                ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00),
+                ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
+            `);
+        }
+
         console.log("⚡ Base de datos PostgreSQL inicializada.");
     } catch (err) {
         console.error("Error al inicializar PostgreSQL:", err);
@@ -156,11 +178,11 @@ app.post('/api/empresas/suscripcion', async (req, res) => {
             [empresa_nombre, contacto_nombre, correo, telefono, plan_empresa, visitas_garantizadas, parseFloat(monto)]
         );
 
-        // 2. Generar ubicación aleatoria en Durango para que aparezca en el mapa y menú
+        // 2. Generar ubicación aleatoria en Durango para el mapa
         const randomLat = (24.0200 + Math.random() * 0.0200).toFixed(4);
         const randomLng = (-104.6700 + Math.random() * 0.0200).toFixed(4);
 
-        // 3. Insertar automáticamente en la lista de clínicas activas
+        // 3. Insertar también en clínicas convenio para que aparezca en el select y mapa
         await pool.query(
             `INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng)
              VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -175,11 +197,9 @@ app.post('/api/empresas/suscripcion', async (req, res) => {
 
 app.delete('/api/admin/empresa/:id', async (req, res) => {
     try {
-        // Obtener el nombre de la empresa antes de borrarla
         const empQuery = await pool.query('SELECT empresa_nombre FROM convenios_empresas WHERE id = $1', [req.params.id]);
         if (empQuery.rows.length > 0) {
             const nombreEmpresa = empQuery.rows[0].empresa_nombre;
-            // Eliminar de clinicas_convenio también
             await pool.query('DELETE FROM clinicas_convenio WHERE nombre = $1', [nombreEmpresa]);
         }
         await pool.query('DELETE FROM convenios_empresas WHERE id = $1', [req.params.id]);
@@ -193,7 +213,7 @@ app.delete('/api/admin/empresa/:id', async (req, res) => {
 
 app.get('/api/clinicas', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM clinicas_convenio ORDER BY id DESC');
+        const result = await pool.query('SELECT * FROM clinicas_convenio ORDER BY id ASC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
