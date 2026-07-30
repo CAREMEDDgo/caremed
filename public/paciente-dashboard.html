@@ -230,7 +230,7 @@
                 document.getElementById('usr-id').innerText = `ID: #${usuario.id.toString().padStart(6, '0')}`;
                 document.getElementById('usr-restantes').innerText = `${usuario.estudios_restantes} / 12`;
 
-                cargarClinicasEnMapaYSelect(usuario.plan || 'Esencial');
+                cargarClinicasEnMapaYSelect();
                 cargarCitasAgendadas();
             }
         } catch (err) {
@@ -238,22 +238,26 @@
         }
     }
 
-    async function cargarClinicasEnMapaYSelect(planUsuario) {
+    async function cargarClinicasEnMapaYSelect() {
         try {
-            const res = await fetch(`/api/clinicas?plan=${encodeURIComponent(planUsuario)}`);
+            const res = await fetch(`/api/clinicas`);
             const clinicas = await res.json();
 
             const select = document.getElementById('select-clinica');
             select.innerHTML = '';
             markersGroup.clearLayers();
 
-            clinicas.forEach(c => {
-                select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
-                
-                const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
-                    .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
-                markersGroup.addLayer(marker);
-            });
+            if (clinicas && clinicas.length > 0) {
+                clinicas.forEach(c => {
+                    select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
+                    
+                    const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
+                        .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
+                    markersGroup.addLayer(marker);
+                });
+            } else {
+                select.innerHTML = '<option value="Salud Digna Durango">Salud Digna Durango</option>';
+            }
 
             if (map) setTimeout(() => map.invalidateSize(), 200);
 

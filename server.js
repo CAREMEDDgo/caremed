@@ -6,6 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Cadena de conexión PostgreSQL (Neon)
 const connectionString = process.env.DATABASE_URL || 'postgresql://alex_owner:Abc123Xyz@ep-cool-name-123456.us-east-2.aws.neon.tech/neondb?sslmode=require';
 
 const pool = new Pool({
@@ -13,6 +14,7 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Inicialización de tablas y columnas
 async function inicializarTablas() {
     try {
         await pool.query(`
@@ -56,7 +58,7 @@ async function inicializarTablas() {
             );
         `);
 
-        // Sincronizar catálogo de Clínicas garantizando datos
+        // Sincronizar catálogo de Clínicas y Hospitales en Durango
         await pool.query('DELETE FROM clinicas_convenio');
         await pool.query(`
             INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
@@ -77,14 +79,14 @@ async function inicializarTablas() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos inicializada correctamente.");
+        console.log("⚡ Base de datos PostgreSQL inicializada con clínicas.");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
 }
 inicializarTablas();
 
-/* API ENDPOINTS */
+/* ==================== ENDPOINTS AUTENTICACIÓN Y USUARIOS ==================== */
 
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
@@ -97,7 +99,7 @@ app.post('/api/auth/registro', async (req, res) => {
         const result = await pool.query(
             `INSERT INTO usuarios_membresias (nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [nombre, correo, password, telefono, sexo || 'Hombre', plan || 'Esencial', modalidad_pago || 'Anual', monto || 0]
+            [nombre, correo, password, telefono, sexo || 'Hombre', plan || 'Esencial', modalidad_pago || 'Anual', parseFloat(monto) || 0]
         );
 
         res.json({ exito: true, usuario: result.rows[0] });
@@ -129,24 +131,19 @@ app.get('/api/usuarios/:id', async (req, res) => {
     }
 });
 
-// Devuelve siempre todas las clínicas o filtradas según plan
+/* ==================== ENDPOINT CLINICAS GARANTIZADO ==================== */
+
 app.get('/api/clinicas', async (req, res) => {
-    let { plan } = req.query;
     try {
-        let query = 'SELECT * FROM clinicas_convenio';
-        if (plan) {
-            if (plan.includes('Plus')) {
-                query = "SELECT * FROM clinicas_convenio WHERE plan_minimo IN ('Esencial', 'Plus')";
-            } else if (plan.includes('Esencial')) {
-                query = "SELECT * FROM clinicas_convenio WHERE plan_minimo = 'Esencial'";
-            }
-        }
-        const result = await pool.query(query);
-        res.json(result.rows.length > 0 ? result.rows : (await pool.query('SELECT * FROM clinicas_convenio')).rows);
+        // Retorna siempre todas las clínicas para asegurar disponibilidad absoluta
+        const result = await pool.query('SELECT * FROM clinicas_convenio ORDER BY id ASC');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
+/* ==================== ENDPOINTS CITAS ==================== */
 
 app.post('/api/citas/agendar', async (req, res) => {
     const { usuario_id, paciente, tipo_compra, estudio, monto_pagado, clinica, fecha_cita } = req.body;
@@ -197,6 +194,8 @@ app.get('/api/citas/usuario/:id', async (req, res) => {
     }
 });
 
+/* ==================== ENDPOINT ADMIN B2B ==================== */
+
 app.get('/api/admin/resumen', async (req, res) => {
     try {
         const suscriptores = await pool.query('SELECT * FROM usuarios_membresias ORDER BY id DESC');
@@ -206,7 +205,11 @@ app.get('/api/admin/resumen', async (req, res) => {
             FROM citas_estudios GROUP BY clinica ORDER BY total_comision_a_cobrar DESC
         `);
 
-        res.json({ suscriptores: suscriptores.rows, citas: citas.rows, comisiones: comisionesPorClinica.rows });
+        res.json({ 
+            suscriptores: suscriptores.rows, 
+            citas: citas.rows, 
+            comisiones: comisionesPorClinica.rows 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -222,4 +225,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor CAREMED activo en puerto ${PORT}`));

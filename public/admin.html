@@ -66,7 +66,7 @@
     </div>
 
     <div class="panel-card">
-        <h2>👥 Registro de Suscriptores / Usuarios</h2>
+        <h2>👥 Registro General de Usuarios y Suscripciones</h2>
         <table>
             <thead>
                 <tr>
@@ -116,45 +116,61 @@
         const res = await fetch('/api/admin/resumen');
         const data = await res.json();
 
-        // Actualizar KPIs
-        document.getElementById('kpi-usuarios').innerText = data.suscriptores.length;
+        // 1. Mostrar total de usuarios registrados
+        document.getElementById('kpi-usuarios').innerText = data.suscriptores ? data.suscriptores.length : 0;
         
-        const totalIngresos = data.suscriptores.reduce((sum, u) => sum + parseFloat(u.monto || 0), 0);
+        // 2. Calcular total acumulado de ingresos
+        let totalIngresos = 0;
+        if (data.suscriptores) {
+            totalIngresos = data.suscriptores.reduce((sum, u) => sum + (parseFloat(u.monto) || 0), 0);
+        }
         document.getElementById('kpi-ingresos').innerText = `$${totalIngresos.toLocaleString()} MXN`;
 
-        const totalComisiones = data.citas.reduce((sum, c) => sum + parseFloat(c.comision_generada || 0), 0);
+        // 3. Calcular comisiones B2B
+        let totalComisiones = 0;
+        if (data.citas) {
+            totalComisiones = data.citas.reduce((sum, c) => sum + (parseFloat(c.comision_generada) || 0), 0);
+        }
         document.getElementById('kpi-comisiones').innerText = `$${totalComisiones.toLocaleString()} MXN`;
 
-        // Tabla Suscriptores
+        // Llenar Tabla Suscriptores
         const tbodySub = document.getElementById('tabla-suscriptores');
         tbodySub.innerHTML = '';
-        data.suscriptores.forEach(s => {
-            tbodySub.innerHTML += `
-                <tr>
-                    <td>#${s.id}</td>
-                    <td><strong>${s.nombre}</strong></td>
-                    <td>${s.correo || 'N/A'}</td>
-                    <td>${s.telefono}</td>
-                    <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${s.plan}</span></td>
-                    <td>${s.modalidad_pago || 'Anual'}</td>
-                    <td>$${parseFloat(s.monto || 0).toLocaleString()} MXN</td>
-                    <td><button class="btn-del" onclick="eliminarSuscripcion(${s.id})">🗑️ Borrar</button></td>
-                </tr>
-            `;
-        });
+        if (data.suscriptores && data.suscriptores.length > 0) {
+            data.suscriptores.forEach(s => {
+                tbodySub.innerHTML += `
+                    <tr>
+                        <td>#${s.id}</td>
+                        <td><strong>${s.nombre}</strong></td>
+                        <td>${s.correo || 'N/A'}</td>
+                        <td>${s.telefono}</td>
+                        <td><span style="background:#eef5ff; color:#0056b3; font-weight:bold; padding:2px 6px; border-radius:4px;">${s.plan}</span></td>
+                        <td>${s.modalidad_pago || 'Anual'}</td>
+                        <td><strong>$${(parseFloat(s.monto) || 0).toLocaleString()} MXN</strong></td>
+                        <td><button class="btn-del" onclick="eliminarSuscripcion(${s.id})">🗑️ Borrar</button></td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbodySub.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay usuarios registrados todavía.</td></tr>';
+        }
 
-        // Tabla Comisiones
+        // Llenar Tabla Comisiones
         const tbodyCom = document.getElementById('tabla-comisiones');
         tbodyCom.innerHTML = '';
-        data.comisiones.forEach(com => {
-            tbodyCom.innerHTML += `
-                <tr>
-                    <td><strong>${com.clinica}</strong></td>
-                    <td>${com.total_pacientes} pacientes</td>
-                    <td><strong style="color:#28a745;">$${parseFloat(com.total_comision_a_cobrar).toFixed(2)} MXN</strong></td>
-                </tr>
-            `;
-        });
+        if (data.comisiones && data.comisiones.length > 0) {
+            data.comisiones.forEach(com => {
+                tbodyCom.innerHTML += `
+                    <tr>
+                        <td><strong>${com.clinica}</strong></td>
+                        <td>${com.total_pacientes} pacientes</td>
+                        <td><strong style="color:#28a745;">$${parseFloat(com.total_comision_a_cobrar || 0).toFixed(2)} MXN</strong></td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbodyCom.innerHTML = '<tr><td colspan="3" style="text-align:center;">No se han agendado citas aún.</td></tr>';
+        }
     }
 
     async function eliminarSuscripcion(id) {
