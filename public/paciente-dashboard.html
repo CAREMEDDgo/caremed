@@ -28,7 +28,7 @@
         .panel-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .panel-box h3 { color: #0056b3; margin-bottom: 15px; font-size: 18px; }
 
-        #map { height: 300px; width: 100%; border-radius: 10px; margin-top: 10px; }
+        #map { height: 260px; width: 100%; border-radius: 10px; margin-top: 10px; }
 
         /* Formulario Agendamiento */
         .form-group { margin-bottom: 12px; }
@@ -42,6 +42,13 @@
         th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
         th { background: #0056b3; color: white; }
         .qr-code { background: #eef5ff; color: #0056b3; font-weight: bold; padding: 4px 8px; border-radius: 4px; font-family: monospace; display: inline-block; }
+
+        /* Módulo de Expediente PDF */
+        .result-card { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .result-info strong { color: #0056b3; font-size: 14px; }
+        .result-info p { color: #666; font-size: 12px; margin-top: 2px; }
+        .btn-download { background: #0056b3; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        .btn-download:hover { background: #004085; }
     </style>
 </head>
 <body>
@@ -109,11 +116,31 @@
         </div>
     </div>
 
-    <!-- Columna Derecha: Mapa de Clínicas Convenio y Citas Agendadas -->
+    <!-- Columna Derecha: Mapa, Expediente PDF y Citas -->
     <div>
         <div class="panel-box">
+            <h3>📄 Mis Resultados y Expediente Digital</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Consulta los reportes emitidos por los laboratorios afiliados en Durango:</p>
+            
+            <div class="result-card">
+                <div class="result-info">
+                    <strong>Biometría Hemática Complete (Enero)</strong>
+                    <p>Laboratorio Del Guadiana • Estado: <span style="color:#28a745; font-weight:bold;">Dentro de Rango Normal</span></p>
+                </div>
+                <button class="btn-download" onclick="descargarResultado('Biometria_Hematica_Enero.pdf')">📥 Descargar PDF</button>
+            </div>
+
+            <div class="result-card">
+                <div class="result-info">
+                    <strong>Química Sanguínea 6 Elementos (Febrero)</strong>
+                    <p>Salud Digna Durango • Estado: <span style="color:#28a745; font-weight:bold;">Dentro de Rango Normal</span></p>
+                </div>
+                <button class="btn-download" onclick="descargarResultado('Quimica_Sanguinea_Febrero.pdf')">📥 Descargar PDF</button>
+            </div>
+        </div>
+
+        <div class="panel-box">
             <h3>📍 Clínicas y Laboratorios Autorizados para tu Plan</h3>
-            <p style="font-size: 13px; color: #666;">El mapa filtra automáticamente los centros médicos a los que puedes acudir según tu paquete contratado:</p>
             <div id="map"></div>
         </div>
 
@@ -139,7 +166,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Obtener usuario_id de la URL o usar #1 por defecto
     const urlParams = new URLSearchParams(window.location.search);
     const usuarioId = urlParams.get('usuario_id') || 1;
 
@@ -180,10 +206,7 @@
             select.innerHTML = '';
 
             clinicas.forEach(c => {
-                // Agregar al select
                 select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
-
-                // Agregar marcador al mapa
                 L.marker([c.lat, c.lng]).addTo(map)
                     .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Permitida para Plan ${plan}`);
             });
@@ -219,6 +242,10 @@
         }
     }
 
+    function descargarResultado(nombreArchivo) {
+        alert(`📄 Descargando expediente digital: "${nombreArchivo}"...\n\nResultados sincronizados con la Red C.A.R.E.M.E.D. Durango.`);
+    }
+
     document.getElementById('form-agendar').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -245,7 +272,7 @@
             const json = await res.json();
             if (res.ok && json.exito) {
                 alert(`🎉 ¡Estudio agendado con éxito!\n\nSe ha generado tu código de atención QR: ${json.cita.codigo_qr}.\nPreséntalo en ${citaData.clinica} el día de tu cita.`);
-                cargarDatosPerfil(); // Recargar contador y tabla
+                cargarDatosPerfil();
             } else {
                 alert('⚠️ Error al agendar la cita.');
             }
@@ -254,7 +281,6 @@
         }
     });
 
-    // Establecer fecha de mañana por defecto en el input
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
     document.getElementById('fecha-cita').value = manana.toISOString().split('T')[0];
