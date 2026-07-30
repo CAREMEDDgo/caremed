@@ -3,35 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.R.E.M.E.D. - Pacientes</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>C.A.R.E.M.E.D. - Membresías de Salud Preventiva</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background: #f0f2f5; }
+        body { background: #f4f7f9; color: #333; }
         
-        header { background: #ffffff; color: #0056b3; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px; }
-        .logo-img { height: 40px; display: block; object-fit: contain; }
+        header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
+        .logo-container { display: flex; align-items: center; gap: 10px; }
+        .logo-img { height: 42px; object-fit: contain; }
         
         nav { display: flex; gap: 8px; flex-wrap: wrap; }
-        nav a { color: #0056b3; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
         nav a:hover, nav a.active { background: #0056b3; color: white; }
 
-        .container { display: flex; flex-direction: column; height: calc(100vh - 65px); }
-        #map { height: 40vh; width: 100%; }
+        .hero { background: linear-gradient(135deg, #0056b3, #0088ff); color: white; text-align: center; padding: 50px 20px; }
+        .hero h1 { font-size: 32px; margin-bottom: 12px; }
+        .hero p { font-size: 16px; max-width: 700px; margin: 0 auto; opacity: 0.9; }
+
+        .container { max-width: 1100px; margin: -30px auto 40px auto; padding: 0 20px; z-index: 10; position: relative; }
         
-        .panel { height: 60vh; overflow-y: auto; padding: 20px; background: white; border-radius: 20px 20px 0 0; margin-top: -15px; z-index: 1000; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
-        .search-container { margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .search-bar { width: 100%; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
-        .filter-tags { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
-        .tag-btn { background: #e9ecef; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
-        .tag-btn.active { background: #0056b3; color: white; font-weight: bold; }
+        /* Tarjetas de Planes */
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .plan-card { background: white; border-radius: 14px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; border: 2px solid transparent; }
+        .plan-card:hover { transform: translateY(-5px); }
+        .plan-card.featured { border-color: #28a745; position: relative; }
+        .badge { position: absolute; top: -12px; right: 20px; background: #28a745; color: white; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
 
-        .card { border: 1px solid #e0e0e0; padding: 15px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-        .card h3 { color: #0056b3; font-size: 16px; margin-bottom: 4px; }
-        .card p { color: #666; font-size: 13px; }
-        .price { font-weight: bold; color: #28a745; font-size: 16px; text-align: right; }
-        .btn-rent { background: #0056b3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-weight: bold; }
+        .plan-title { font-size: 22px; color: #0056b3; font-weight: bold; margin-bottom: 5px; }
+        .plan-subtitle { font-size: 13px; color: #666; margin-bottom: 15px; }
+        .plan-price { font-size: 28px; color: #28a745; font-weight: bold; margin-bottom: 5px; }
+        .plan-price span { font-size: 14px; color: #777; font-weight: normal; }
+        .savings { font-size: 12px; color: #d9534f; font-weight: bold; margin-bottom: 15px; }
 
+        .benefits-list { list-style: none; margin-bottom: 20px; font-size: 13px; color: #555; }
+        .benefits-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        
+        .btn-subscribe { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn-subscribe:hover { background: #004085; }
+
+        /* Calendario de Estudios */
+        .schedule-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .schedule-section h2 { color: #0056b3; margin-bottom: 15px; font-size: 20px; text-align: center; }
+        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
+        .month-box { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; font-size: 13px; }
+        .month-name { font-weight: bold; color: #0056b3; margin-bottom: 4px; display: block; }
+
+        /* Modal Formulario */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-content h3 { color: #0056b3; margin-bottom: 15px; }
@@ -45,174 +62,163 @@
 <body>
 
 <header>
-    <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img">
+    <div class="logo-container">
+        <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
+    </div>
     <nav>
-        <a href="/" class="active">🩺 Pacientes</a>
-        <a href="/proveedor.html">🏬 Proveedores</a>
-        <a href="/solicitudes.html">📋 Solicitudes</a>
+        <a href="/" class="active">💳 Membresías</a>
+        <a href="/paciente-dashboard.html">🩺 Mi Panel y Citas</a>
         <a href="/admin.html">🛡️ Administración</a>
     </nav>
 </header>
 
+<section class="hero">
+    <h1>Tu Salud Preventiva Automática en Durango</h1>
+    <p>Suscríbete a un plan anual, obtén 12 estudios médicos al año automatizados y accede a la red de laboratorios y hospitales más prestigiosos de la ciudad.</p>
+</section>
+
 <div class="container">
-    <div id="map"></div>
-    <div class="panel">
-        <h2>Equipos Médicos Disponibles Cerca</h2>
-        <br>
+    <div class="plans-grid">
         
-        <div class="search-container">
-            <input type="text" id="input-buscar" class="search-bar" placeholder="🔍 Buscar por nombre (ej. Concentrador, Silla...)" oninput="filtrarEquipos()">
-            <div class="filter-tags">
-                <button class="tag-btn active" onclick="seleccionarCategoria('Todas', this)">Todas</button>
-                <button class="tag-btn" onclick="seleccionarCategoria('Oxígeno', this)">Oxígenoterapia</button>
-                <button class="tag-btn" onclick="seleccionarCategoria('Movilidad', this)">Movilidad</button>
-                <button class="tag-btn" onclick="seleccionarCategoria('Camas', this)">Camas / Monitores</button>
+        <!-- Plan Esencial -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Esencial</div>
+                <div class="plan-subtitle">Ideal para jóvenes y estudiantes</div>
+                <div class="plan-price">$2,999 <span>/ año</span></div>
+                <div class="savings">Valor real: ~$3,370 | Ahorro: $370</div>
+                <ul class="benefits-list">
+                    <li>✅ 12 estudios de laboratorio al año</li>
+                    <li>✅ Agenda de citas automática</li>
+                    <li>✅ Historial digital y código QR</li>
+                    <li>🏥 Laboratorios locales (Del Guadiana, Santa María, Gálvez)</li>
+                </ul>
             </div>
+            <button class="btn-subscribe" onclick="abrirModalSuscripcion('Esencial', 2999)">Contratar Esencial</button>
         </div>
 
-        <div id="lista-equipos">Cargando catálogo...</div>
+        <!-- Plan Plus -->
+        <div class="plan-card featured">
+            <span class="badge">MÁS POPULAR</span>
+            <div>
+                <div class="plan-title">Plan Plus</div>
+                <div class="plan-subtitle">Protección médica completa para adultos</div>
+                <div class="plan-price">$4,299 <span>/ año</span></div>
+                <div class="savings">Valor real: ~$5,120 | Ahorro: $821</div>
+                <ul class="benefits-list">
+                    <li>✅ Todo lo del Plan Esencial</li>
+                    <li>✅ Interpretación básica de resultados</li>
+                    <li>✅ 15% de descuento en estudios adicionales</li>
+                    <li>🏥 Salud Digna, Laboratorio Chopo, San Jorge</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" style="background:#28a745;" onclick="abrirModalSuscripcion('Plus', 4299)">Contratar Plus</button>
+        </div>
+
+        <!-- Plan Premium -->
+        <div class="plan-card">
+            <div>
+                <div class="plan-title">Plan Premium</div>
+                <div class="plan-subtitle">Cobertura médica ejecutiva y hospitales</div>
+                <div class="plan-price">$6,999 <span>/ año</span></div>
+                <div class="savings">Valor real: ~$8,470 | Ahorro: $1,471</div>
+                <ul class="benefits-list">
+                    <li>✅ Todo lo del Plan Plus</li>
+                    <li>✅ Consulta médica anual + Videoconsultas</li>
+                    <li>✅ Atencion con prioridad y expediente inteligente</li>
+                    <li>🏥 Hospital San Jorge, Del Parque, La Paz</li>
+                </ul>
+            </div>
+            <button class="btn-subscribe" onclick="abrirModalSuscripcion('Premium', 6999)">Contratar Premium</button>
+        </div>
+
+    </div>
+
+    <!-- Calendario de Estudios Preventivos -->
+    <div class="schedule-section">
+        <h2>📅 Calendario Anual de Estudios Preventivos Incluidos</h2>
+        <p style="text-align: center; font-size: 13px; color: #666;">Tu membresía te agendará automáticamente un estudio preventivo cada mes:</p>
+        
+        <div class="schedule-grid">
+            <div class="month-box"><span class="month-name">Enero</span>Biometría Hemática</div>
+            <div class="month-box"><span class="month-name">Febrero</span>Química Sanguínea (6)</div>
+            <div class="month-box"><span class="month-name">Marzo</span>Examen General de Orina</div>
+            <div class="month-box"><span class="month-name">Abril</span>Perfil de Lípidos</div>
+            <div class="month-box"><span class="month-name">Mayo</span>Glucosa en Sangre</div>
+            <div class="month-box"><span class="month-name">Junio</span>Pruebas de Función Hepática</div>
+            <div class="month-box"><span class="month-name">Julio</span>Pruebas de Función Renal</div>
+            <div class="month-box"><span class="month-name">Agosto</span>Electrolitos Séricos</div>
+            <div class="month-box"><span class="month-name">Septiembre</span>Ácido Úrico</div>
+            <div class="month-box"><span class="month-name">Octubre</span>Perfil Tiroideo (TSH)</div>
+            <div class="month-box"><span class="month-name">Noviembre</span>Vitamina D</div>
+            <div class="month-box"><span class="month-name">Diciembre</span>Electrocardiograma</div>
+        </div>
     </div>
 </div>
 
-<div id="modal-renta" class="modal">
+<!-- Modal para Suscripción -->
+<div id="modal-suscripcion" class="modal">
     <div class="modal-content">
-        <h3>📋 Datos de Contacto para Renta</h3>
-        <p id="modal-equipo-info" style="font-size: 13px; color: #555; margin-bottom: 10px;"></p>
-        <form id="form-paciente">
-            <label>Nombre Completo</label>
-            <input type="text" id="paciente-nombre" placeholder="Ej. Maria López" required>
+        <h3>💳 Suscripción a Membresía CAREMED</h3>
+        <p id="modal-plan-info" style="font-size: 13px; color: #555; margin-bottom: 10px;"></p>
+        <form id="form-suscripcion">
+            <label>Nombre Completo del Titular</label>
+            <input type="text" id="sub-nombre" placeholder="Ej. Maria López" required>
 
             <label>Teléfono de Contacto (WhatsApp)</label>
-            <input type="tel" id="paciente-telefono" placeholder="Ej. 618 123 4567" required>
-
-            <label>Dirección de Entrega en Durango</label>
-            <input type="text" id="paciente-direccion" placeholder="Ej. Col. Centro, Calle Hidalgo #123" required>
+            <input type="tel" id="sub-telefono" placeholder="Ej. 618 123 4567" required>
 
             <div class="modal-btns">
-                <button type="submit" class="btn-confirm"> Confirmar y Enviar</button>
+                <button type="submit" class="btn-confirm"> Confirmar Suscripción</button>
                 <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const map = L.map('map').setView([24.0277, -104.6532], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    let planSeleccionado = {};
 
-    L.marker([24.0277, -104.6532]).addTo(map).bindPopup('<b>Tu Ubicación Actual</b>').openPopup();
-
-    let todosLosEquipos = [];
-    let equipoSeleccionado = null;
-    let categoriaSeleccionada = 'Todas';
-    let MarcadoresEnMapa = [];
-
-    async function cargarEquipos() {
-        const contenedor = document.getElementById('lista-equipos');
-        try {
-            const respuesta = await fetch('/api/equipos');
-            const json = await respuesta.json();
-            todosLosEquipos = json.data || json;
-            renderizarVista(todosLosEquipos);
-        } catch (error) {
-            contenedor.innerHTML = `<p style="color: red;">⚠️ Error al cargar el catálogo.</p>`;
-        }
-    }
-
-    function renderizarVista(lista) {
-        const contenedor = document.getElementById('lista-equipos');
-        MarcadoresEnMapa.forEach(m => map.removeLayer(m));
-        MarcadoresEnMapa = [];
-
-        if (!lista || lista.length === 0) {
-            contenedor.innerHTML = '<p style="color:#777; text-align:center; padding: 20px;">No se encontraron equipos.</p>';
-            return;
-        }
-
-        contenedor.innerHTML = '';
-        lista.forEach(item => {
-            if (item.lat && item.lng) {
-                const marker = L.marker([item.lat, item.lng]).addTo(map)
-                    .bindPopup(`<b>${item.nombre}</b><br>Proveedor: ${item.proveedor}`);
-                MarcadoresEnMapa.push(marker);
-            }
-
-            contenedor.innerHTML += `
-                <div class="card">
-                    <div>
-                        <h3>${item.nombre}</h3>
-                        <p>Categoría: <strong>${item.categoria}</strong></p>
-                        <p>Proveedor: ${item.proveedor}</p>
-                    </div>
-                    <div>
-                        <div class="price">$${item.precio} / mes</div>
-                        <button class="btn-rent" onclick="abrirModal('${item.nombre}', ${item.precio}, '${item.proveedor}')">Rentar Ahora</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function abrirModal(nombre, precio, proveedor) {
-        equipoSeleccionado = { nombre, precio, proveedor };
-        document.getElementById('modal-equipo-info').innerText = `Equipo: ${nombre} ($${precio}/mes) - ${proveedor}`;
-        document.getElementById('modal-renta').style.display = 'flex';
+    function abrirModalSuscripcion(plan, monto) {
+        planSeleccionado = { plan, monto };
+        document.getElementById('modal-plan-info').innerText = `Plan Seleccionado: ${plan} ($${monto.toLocaleString()} MXN / año)`;
+        document.getElementById('modal-suscripcion').style.display = 'flex';
     }
 
     function cerrarModal() {
-        document.getElementById('modal-renta').style.display = 'none';
-        document.getElementById('form-paciente').reset();
+        document.getElementById('modal-suscripcion').style.display = 'none';
+        document.getElementById('form-suscripcion').reset();
     }
 
-    document.getElementById('form-paciente').addEventListener('submit', async (e) => {
+    document.getElementById('form-suscripcion').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const solicitud = {
-            equipo: equipoSeleccionado.nombre,
-            precio: equipoSeleccionado.precio,
-            proveedor: equipoSeleccionado.proveedor,
-            paciente: document.getElementById('paciente-nombre').value,
-            telefono: document.getElementById('paciente-telefono').value,
-            direccion: document.getElementById('paciente-direccion').value
+        const datos = {
+            nombre: document.getElementById('sub-nombre').value,
+            telefono: document.getElementById('sub-telefono').value,
+            plan: planSeleccionado.plan,
+            monto: planSeleccionado.monto
         };
 
         try {
-            const res = await fetch('/api/solicitudes', {
+            const res = await fetch('/api/membresias/suscripcion', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(solicitud)
+                body: JSON.stringify(datos)
             });
 
-            if (res.ok) {
-                alert(`🎉 ¡Solicitud recibida con éxito!\n\n${solicitud.proveedor} se comunicará al ${solicitud.telefono} para entregar el equipo en: ${solicitud.direccion}.`);
-                cerrarModal();
+            const json = await res.json();
+
+            if (res.ok && json.exito) {
+                alert(`🎉 ¡Suscripción exitosa al Plan ${datos.plan}!\n\nTu ID de usuario es #${json.usuario.id}. Ahora puedes acceder al Panel de Paciente para agendar tus estudios.`);
+                window.location.href = `/paciente-dashboard.html?usuario_id=${json.usuario.id}`;
             } else {
-                alert('⚠️ Error al registrar solicitud.');
+                alert('⚠️ Error al registrar la suscripción.');
             }
         } catch (err) {
-            alert('⚠️ Ocurrió un error al conectar con el servidor.');
+            alert('⚠️ Error al conectar con el servidor.');
         }
     });
-
-    function filtrarEquipos() {
-        const texto = document.getElementById('input-buscar').value.toLowerCase();
-        const filtrados = todosLosEquipos.filter(item => {
-            const coincideTexto = item.nombre.toLowerCase().includes(texto) || item.proveedor.toLowerCase().includes(texto);
-            const coincideCategoria = (categoriaSeleccionada === 'Todas') || (item.categoria === categoriaSeleccionada);
-            return coincideTexto && coincideCategoria;
-        });
-        renderizarVista(filtrados);
-    }
-
-    function seleccionarCategoria(cat, elemento) {
-        categoriaSeleccionada = cat;
-        document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
-        elemento.classList.add('active');
-        filtrarEquipos();
-    }
-
-    cargarEquipos();
 </script>
 
 </body>
