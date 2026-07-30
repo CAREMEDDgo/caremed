@@ -56,9 +56,10 @@
 <header>
     <img src="/logo-v2.png" alt="CAREMED Logo" class="logo-img" onerror="this.src='/logo.png'">
     <nav>
-        <a href="/">💳 Membresías y Tienda</a>
+        <a href="/">💳 Membresías Personas</a>
+        <a href="/empresas.html">🏢 Empresas y Convenios</a>
         <a href="/paciente-dashboard.html" class="active">🩺 Mi Panel y Citas</a>
-        <a href="/farmacias.html">💊 Farmacias Convenio</a>
+        <a href="/farmacias.html">💊 Farmacias Aliadas</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
         <button id="btn-cerrar-sesion" class="btn-logout" style="display:none;" onclick="cerrarSesion()">🔒 Cerrar Sesión</button>
     </nav>
@@ -98,27 +99,47 @@
             <h3>📅 Agendar Estudio Preventivo</h3>
             <form id="form-agendar">
                 <div class="form-group">
-                    <label>Selecciona el Estudio Anual</label>
+                    <label>Selecciona el Estudio Médico</label>
                     <select id="select-estudio" required>
-                        <option value="Biometría Hemática (Enero)">Biometría Hemática (Enero)</option>
-                        <option value="Química Sanguínea (Febrero)">Química Sanguínea (Febrero)</option>
-                        <option value="Examen General de Orina (Marzo)">Examen General de Orina (Marzo)</option>
-                        <option value="Perfil de Lípidos (Abril)">Perfil de Lípidos (Abril)</option>
-                        <option value="Función Hepática (Mayo)">Función Hepática (Mayo)</option>
-                        <option value="Función Renal (Junio)">Función Renal (Junio)</option>
-                        <option value="Ácido Úrico / Perfil Hormonal (Julio)">Ácido Úrico / Perfil Hormonal (Julio)</option>
-                        <option value="PSA / Papanicolaou (Agosto)">PSA / Papanicolaou (Agosto)</option>
-                        <option value="Electrocardiograma / Mastografía (Septiembre)">Electrocardiograma / Mastografía (Septiembre)</option>
-                        <option value="Perfil Tiroideo TSH (Octubre)">Perfil Tiroideo TSH (Octubre)</option>
-                        <option value="Glucosa y HbA1c (Noviembre)">Glucosa y HbA1c (Noviembre)</option>
-                        <option value="Coproparasitoscópico (Diciembre)">Coproparasitoscópico (Diciembre)</option>
+                        <option value="Ácido úrico">Ácido úrico</option>
+                        <option value="Antígeno Prostático Específico (PSA total)">Antígeno Prostático Específico (PSA total)</option>
+                        <option value="Biometría hemática completa (BHC)">Biometría hemática completa (BHC)</option>
+                        <option value="Cortisol">Cortisol</option>
+                        <option value="Creatinina sérica">Creatinina sérica</option>
+                        <option value="Electrolitos séricos">Electrolitos séricos</option>
+                        <option value="Estradiol">Estradiol</option>
+                        <option value="Examen general de orina">Examen general de orina</option>
+                        <option value="Ferritina">Ferritina</option>
+                        <option value="FSH">FSH</option>
+                        <option value="Hemoglobina glicosilada (HbA1c)">Hemoglobina glicosilada (HbA1c)</option>
+                        <option value="Hierro sérico">Hierro sérico</option>
+                        <option value="Insulina basal">Insulina basal</option>
+                        <option value="LH">LH</option>
+                        <option value="Papanicolaou (citología cervical)">Papanicolaou (citología cervical)</option>
+                        <option value="Perfil de lípidos">Perfil de lípidos</option>
+                        <option value="Perfil hormonal masculino (LH, FSH y prolactina)">Perfil hormonal masculino (LH, FSH y prolactina)</option>
+                        <option value="Progesterona">Progesterona</option>
+                        <option value="Prolactina">Prolactina</option>
+                        <option value="Proteína C Reactiva (PCR)">Proteína C Reactiva (PCR)</option>
+                        <option value="Prueba de VPH por PCR">Prueba de VPH por PCR</option>
+                        <option value="Prueba VIH de 4.ª generación">Prueba VIH de 4.ª generación</option>
+                        <option value="Pruebas de función hepática">Pruebas de función hepática</option>
+                        <option value="Química sanguínea de 27 elementos">Química sanguínea de 27 elementos</option>
+                        <option value="T3 Libre">T3 Libre</option>
+                        <option value="T4 Libre">T4 Libre</option>
+                        <option value="Testosterona total">Testosterona total</option>
+                        <option value="TSH">TSH</option>
+                        <option value="Urea">Urea</option>
+                        <option value="Vitamina B12">Vitamina B12</option>
+                        <option value="Vitamina D">Vitamina D</option>
+                        <option value="β-hCG cuantitativa (embarazo)">β-hCG cuantitativa (embarazo)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Clínica / Hospital en Convenio</label>
                     <select id="select-clinica" required>
-                        <option value="">Cargando laboratorios autorizados...</option>
+                        <option value="">Cargando laboratorios y clínicas en Durango...</option>
                     </select>
                 </div>
 
@@ -134,7 +155,7 @@
 
     <div>
         <div class="panel-box">
-            <h3>📍 Clínicas y Hospitales Autorizados para tu Plan</h3>
+            <h3>📍 Clínicas y Hospitales Disponibles en Durango</h3>
             <div id="map"></div>
         </div>
 
@@ -164,6 +185,24 @@
     let nombreUsuario = '';
     let map = null;
     let markersGroup = L.layerGroup();
+
+    // Catálogo Base Fallback en caso de latencia de red
+    const clinicasBase = [
+        { nombre: "Laboratorio Gutiérrez", categoria: "Económico", direccion: "Zona Centro, Durango", lat: 24.0250, lng: -104.6680 },
+        { nombre: "Laboratorio San José", categoria: "Económico", direccion: "Col. Hidalgo, Durango", lat: 24.0180, lng: -104.6520 },
+        { nombre: "Laboratorio Clínico del Guadiana", categoria: "Económico", direccion: "Calle Negrete #304, Centro", lat: 24.0270, lng: -104.6640 },
+        { nombre: "Laboratorio Analiza", categoria: "Económico", direccion: "Av. Normal, Durango", lat: 24.0290, lng: -104.6610 },
+        { nombre: "Laboratorio Clínico del Norte", categoria: "Económico", direccion: "Blvd. Jose Maria Morelos, Durango", lat: 24.0380, lng: -104.6510 },
+        { nombre: "Laboratorio del Centro", categoria: "Económico", direccion: "Calle Constitución #210, Centro", lat: 24.0260, lng: -104.6670 },
+        { nombre: "Salud Digna Durango", categoria: "Medio", direccion: "Av. 20 de Noviembre #801, Centro", lat: 24.0265, lng: -104.6650 },
+        { nombre: "Laboratorios Chopo", categoria: "Medio", direccion: "Blvd. Dolores del Río, Durango", lat: 24.0220, lng: -104.6580 },
+        { nombre: "Laboratorio Juárez", categoria: "Medio", direccion: "Av. Juárez #405, Centro", lat: 24.0240, lng: -104.6620 },
+        { nombre: "Laboratorio del Lago", categoria: "Medio", direccion: "Fracc. Los Remedios, Durango", lat: 24.0350, lng: -104.6490 },
+        { nombre: "Hospital San Jorge", categoria: "Hospital", direccion: "Av. Hidalgo #412, Centro", lat: 24.0285, lng: -104.6630 },
+        { nombre: "Hospital del Parque", categoria: "Hospital", direccion: "Calle del Parque #115, Durango", lat: 24.0150, lng: -104.6700 },
+        { nombre: "Hospital La Paz", categoria: "Hospital", direccion: "Blvd. Francisco Villa #101, Durango", lat: 24.0410, lng: -104.6320 },
+        { nombre: "Hospital Santa Bárbara", categoria: "Hospital", direccion: "Calle 5 de Febrero, Durango", lat: 24.0245, lng: -104.6690 }
+    ];
 
     if (usuarioActualId) {
         mostrarDashboard();
@@ -235,35 +274,36 @@
             }
         } catch (err) {
             console.error("Error al cargar perfil:", err);
+            cargarClinicasEnMapaYSelect();
         }
     }
 
     async function cargarClinicasEnMapaYSelect() {
+        const select = document.getElementById('select-clinica');
+        select.innerHTML = '';
+        markersGroup.clearLayers();
+
+        let clinicasAMostrar = clinicasBase;
+
         try {
             const res = await fetch(`/api/clinicas`);
-            const clinicas = await res.json();
-
-            const select = document.getElementById('select-clinica');
-            select.innerHTML = '';
-            markersGroup.clearLayers();
-
-            if (clinicas && clinicas.length > 0) {
-                clinicas.forEach(c => {
-                    select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
-                    
-                    const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
-                        .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
-                    markersGroup.addLayer(marker);
-                });
-            } else {
-                select.innerHTML = '<option value="Salud Digna Durango">Salud Digna Durango</option>';
+            const data = await res.json();
+            if (data && data.length > 0) {
+                clinicasAMostrar = data;
             }
-
-            if (map) setTimeout(() => map.invalidateSize(), 200);
-
         } catch (err) {
-            console.error("Error al cargar clínicas:", err);
+            console.log("Usando catálogo local garantizado.");
         }
+
+        clinicasAMostrar.forEach(c => {
+            select.innerHTML += `<option value="${c.nombre}">${c.nombre} (${c.categoria})</option>`;
+            
+            const marker = L.marker([parseFloat(c.lat), parseFloat(c.lng)])
+                .bindPopup(`<b>${c.nombre}</b><br>Categoría: ${c.categoria}<br>Dirección: ${c.direccion}`);
+            markersGroup.addLayer(marker);
+        });
+
+        if (map) setTimeout(() => map.invalidateSize(), 200);
     }
 
     async function cargarCitasAgendadas() {
