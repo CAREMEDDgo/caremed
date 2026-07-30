@@ -22,9 +22,7 @@ async function inicializarTablas() {
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(150) NOT NULL,
                 telefono VARCHAR(50) NOT NULL,
-                sexo VARCHAR(20) DEFAULT 'Hombre',
                 plan VARCHAR(50) NOT NULL,
-                modalidad_pago VARCHAR(20) DEFAULT 'Anual',
                 monto NUMERIC(10, 2) NOT NULL,
                 estudios_restantes INT DEFAULT 12,
                 fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -56,7 +54,7 @@ async function inicializarTablas() {
             );
         `);
 
-        // AGREGAR COLUMNAS FALTANTES A TABLAS EXISTENTES SI NO EXISTEN
+        // ASEGURAR QUE TODAS LAS COLUMNAS NUEVAS EXISTAN EN LA TABLA
         await pool.query(`
             DO $$ 
             BEGIN 
@@ -66,6 +64,14 @@ async function inicializarTablas() {
 
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='password') THEN
                     ALTER TABLE usuarios_membresias ADD COLUMN password VARCHAR(100);
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='sexo') THEN
+                    ALTER TABLE usuarios_membresias ADD COLUMN sexo VARCHAR(20) DEFAULT 'Hombre';
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios_membresias' AND column_name='modalidad_pago') THEN
+                    ALTER TABLE usuarios_membresias ADD COLUMN modalidad_pago VARCHAR(20) DEFAULT 'Anual';
                 END IF;
             END $$;
         `);
@@ -88,7 +94,7 @@ async function inicializarTablas() {
             `);
         }
 
-        console.log("⚡ Base de datos PostgreSQL sincronizada con columna correo.");
+        console.log("⚡ Base de datos PostgreSQL completamente sincronizada (correo, password, sexo, modalidad_pago).");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
@@ -109,7 +115,7 @@ app.post('/api/auth/registro', async (req, res) => {
         const result = await pool.query(
             `INSERT INTO usuarios_membresias (nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto]
+            [nombre, correo, password, telefono, sexo || 'Hombre', plan, modalidad_pago || 'Anual', monto]
         );
 
         res.json({ exito: true, usuario: result.rows[0] });
@@ -236,4 +242,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor ejecutándose en el puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor listo en el puerto ${PORT}`));
