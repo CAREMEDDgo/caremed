@@ -21,7 +21,7 @@
         .container { max-width: 1100px; margin: -25px auto 40px auto; padding: 0 20px; z-index: 10; position: relative; }
         
         .toggle-container { text-align: center; margin-bottom: 25px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .toggle-btn { background: #eef5ff; color: #0056b3; border: 1px solid #0056b3; padding: 8px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; margin: 0 5px; transition: 0.2s; }
+        .toggle-btn { background: #eef5ff; color: #0056b3; border: 1px solid #0056b3; padding: 10px 22px; border-radius: 20px; font-weight: bold; cursor: pointer; margin: 0 5px; transition: 0.2s; font-size: 14px; }
         .toggle-btn.active { background: #0056b3; color: white; }
 
         .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -40,9 +40,10 @@
 
         .single-section { background: white; margin-top: 40px; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .table-single { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .table-single th, .table-single td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; font-size: 13px; }
+        .table-single th, .table-single td { border: 1px solid #e0e0e0; padding: 10px 12px; text-align: left; font-size: 13px; }
         .table-single th { background: #0056b3; color: white; }
-        .btn-buy-single { background: #28a745; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .table-single tr:nth-child(even) { background-color: #fcfcfc; }
+        .btn-buy-single { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
@@ -74,7 +75,6 @@
 <div class="container">
     
     <div class="toggle-container">
-        <span>Selecciona la Modalidad de Pago: </span>
         <button class="toggle-btn active" id="btn-pago-anual" onclick="cambiarModalidad('Anual')">Modalidad Anual (Ahorras más)</button>
         <button class="toggle-btn" id="btn-pago-mensual" onclick="cambiarModalidad('Mensual')">Modalidad Mensual</button>
     </div>
@@ -87,7 +87,7 @@
                 <div class="plan-price" id="precio-esencial">$4,999 <span>/ Anual</span></div>
                 <div class="savings" id="ahorro-esencial">Ahorras $989 MXN vs pago mensual</div>
                 <ul class="benefits-list">
-                    <li>✅ <strong>12 estudios anuales</strong></li>
+                    <li id="estudio-esencial">✅ <strong>12 estudios anuales</strong></li>
                     <li>✅ Laboratorios económicos afiliados</li>
                     <li>✅ Historial clínico digital y código QR</li>
                 </ul>
@@ -103,7 +103,7 @@
                 <div class="plan-price" id="precio-plus">$6,999 <span>/ Anual</span></div>
                 <div class="savings" id="ahorro-plus">Ahorras $1,389 MXN vs pago mensual</div>
                 <ul class="benefits-list">
-                    <li>✅ Todo lo del Plan Esencial</li>
+                    <li id="estudio-plus">✅ Todo lo del Plan Esencial</li>
                     <li>✅ Atención prioritaria e interpretación</li>
                     <li>🏥 Salud Digna, Chopo, Laboratorio Juárez</li>
                 </ul>
@@ -118,7 +118,7 @@
                 <div class="plan-price" id="precio-premium">$8,899 <span>/ Anual</span></div>
                 <div class="savings" id="ahorro-premium">Ahorras $1,889 MXN vs pago mensual</div>
                 <ul class="benefits-list">
-                    <li>✅ Todo lo del Plan Plus</li>
+                    <li id="estudio-premium">✅ Todo lo del Plan Plus</li>
                     <li>✅ Expediente avanzado e interpretación médica</li>
                     <li>🏥 Hospital San Jorge, Del Parque, La Paz</li>
                 </ul>
@@ -127,33 +127,53 @@
         </div>
     </div>
 
-    <!-- ESTUDIOS INDIVIDUALES A LA CARTA -->
+    <!-- TABLA DE ESTUDIOS MÉDICOS A LA CARTA -->
     <div class="single-section">
-        <h2 style="text-align: center; color: #0056b3;">🛒 Estudios Médicos Disponibles (A la carta)</h2>
-        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Adquiere estudios individuales a precio preferencial y consúltalos desde tu panel de paciente:</p>
+        <h2 style="text-align: center; color: #0056b3;">🛒 Catálogo de Estudios Médicos Disponibles</h2>
+        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Adquiere tus estudios con descuento preferencial en la plataforma y consúltalos en tu panel:</p>
         
         <table class="table-single">
             <thead>
                 <tr>
-                    <th>Estudio Médico Disponible</th>
-                    <th>Precio Clínica</th>
-                    <th>Precio App Preferencial</th>
+                    <th>Nombre del Estudio</th>
+                    <th>Precio Normal</th>
+                    <th>Precio Plataforma</th>
                     <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Biometría Hemática Completa</td><td>$250</td><td><strong>$230 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Biometría Hemática Completa', 230)">Comprar Ahora</button></td></tr>
-                <tr><td>Química Sanguínea (6 Elementos)</td><td>$380</td><td><strong>$350 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Química Sanguínea (6 Elementos)', 350)">Comprar Ahora</button></td></tr>
-                <tr><td>Examen General de Orina (EGO)</td><td>$180</td><td><strong>$150 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Examen General de Orina (EGO)', 150)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil de Lípidos Completo</td><td>$420</td><td><strong>$390 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil de Lípidos Completo', 390)">Comprar Ahora</button></td></tr>
-                <tr><td>Pruebas de Función Hepática y Renal</td><td>$520</td><td><strong>$480 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Pruebas de Función Hepática y Renal', 480)">Comprar Ahora</button></td></tr>
-                <tr><td>Ácido Úrico y Detección Metabólica</td><td>$220</td><td><strong>$190 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Ácido Úrico y Detección Metabólica', 190)">Comprar Ahora</button></td></tr>
-                <tr><td>Antígeno Prostático Específico (PSA - Hombre)</td><td>$600</td><td><strong>$560 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Antígeno Prostático (PSA)', 560)">Comprar Ahora</button></td></tr>
-                <tr><td>Papanicolaou y Citología Cervical (Mujer)</td><td>$550</td><td><strong>$520 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Papanicolaou y Citología Cervical', 520)">Comprar Ahora</button></td></tr>
-                <tr><td>Electrocardiograma de Reposo</td><td>$450</td><td><strong>$410 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Electrocardiograma de Reposo', 410)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil Tiroideo Completo (TSH, T3, T4)</td><td>$700</td><td><strong>$650 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil Tiroideo Completo', 650)">Comprar Ahora</button></td></tr>
-                <tr><td>Glucosa y Hemoglobina Glicosilada (HbA1c)</td><td>$390</td><td><strong>$360 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Glucosa y HbA1c', 360)">Comprar Ahora</button></td></tr>
-                <tr><td>Coproparasitoscópico y Cultivo</td><td>$200</td><td><strong>$180 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Coproparasitoscópico y Cultivo', 180)">Comprar Ahora</button></td></tr>
+                <tr><td>Ácido úrico</td><td>$195.00</td><td><strong>$148.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Ácido úrico', 148)">Comprar Ahora</button></td></tr>
+                <tr><td>Antígeno Prostático Específico (PSA total)</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Antígeno Prostático Específico (PSA total)', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>Biometría hemática completa (BHC)</td><td>$330.00</td><td><strong>$248.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Biometría hemática completa (BHC)', 248)">Comprar Ahora</button></td></tr>
+                <tr><td>Cortisol</td><td>$900.00</td><td><strong>$676.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Cortisol', 676)">Comprar Ahora</button></td></tr>
+                <tr><td>Creatinina sérica</td><td>$195.00</td><td><strong>$148.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Creatinina sérica', 148)">Comprar Ahora</button></td></tr>
+                <tr><td>Electrolitos séricos</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Electrolitos séricos', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Estradiol</td><td>$675.00</td><td><strong>$508.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Estradiol', 508)">Comprar Ahora</button></td></tr>
+                <tr><td>Examen general de orina</td><td>$180.00</td><td><strong>$136.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Examen general de orina', 136)">Comprar Ahora</button></td></tr>
+                <tr><td>Ferritina</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Ferritina', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>FSH</td><td>$675.00</td><td><strong>$508.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('FSH', 508)">Comprar Ahora</button></td></tr>
+                <tr><td>Hemoglobina glicosilada (HbA1c)</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Hemoglobina glicosilada (HbA1c)', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Hierro sérico</td><td>$450.00</td><td><strong>$338.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Hierro sérico', 338)">Comprar Ahora</button></td></tr>
+                <tr><td>Insulina basal</td><td>$675.00</td><td><strong>$508.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Insulina basal', 508)">Comprar Ahora</button></td></tr>
+                <tr><td>LH</td><td>$675.00</td><td><strong>$508.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('LH', 508)">Comprar Ahora</button></td></tr>
+                <tr><td>Papanicolaou (citología cervical)</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Papanicolaou (citología cervical)', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil de lípidos</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil de lípidos', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil hormonal masculino (LH, FSH y prolactina)</td><td>$2,250.00</td><td><strong>$1,688.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil hormonal masculino (LH, FSH y prolactina)', 1688)">Comprar Ahora</button></td></tr>
+                <tr><td>Progesterona</td><td>$675.00</td><td><strong>$508.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Progesterona', 508)">Comprar Ahora</button></td></tr>
+                <tr><td>Prolactina</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Prolactina', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Proteína C Reactiva (PCR)</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Proteína C Reactiva (PCR)', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Prueba de VPH por PCR</td><td>$2,700.00</td><td><strong>$2,026.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Prueba de VPH por PCR', 2026)">Comprar Ahora</button></td></tr>
+                <tr><td>Prueba VIH de 4.ª generación</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Prueba VIH de 4.ª generación', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>Pruebas de función hepática</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Pruebas de función hepática', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>Química sanguínea de 27 elementos</td><td>$975.00</td><td><strong>$732.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Química sanguínea de 27 elementos', 732)">Comprar Ahora</button></td></tr>
+                <tr><td>T3 Libre</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('T3 Libre', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>T4 Libre</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('T4 Libre', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Testosterona total</td><td>$825.00</td><td><strong>$620.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Testosterona total', 620)">Comprar Ahora</button></td></tr>
+                <tr><td>TSH</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('TSH', 394)">Comprar Ahora</button></td></tr>
+                <tr><td>Urea</td><td>$195.00</td><td><strong>$148.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Urea', 148)">Comprar Ahora</button></td></tr>
+                <tr><td>Vitamina B12</td><td>$750.00</td><td><strong>$564.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Vitamina B12', 564)">Comprar Ahora</button></td></tr>
+                <tr><td>Vitamina D</td><td>$1,275.00</td><td><strong>$958.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Vitamina D', 958)">Comprar Ahora</button></td></tr>
+                <tr><td>β-hCG cuantitativa (embarazo)</td><td>$525.00</td><td><strong>$394.00 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('β-hCG cuantitativa (embarazo)', 394)">Comprar Ahora</button></td></tr>
             </tbody>
         </table>
     </div>
@@ -252,6 +272,11 @@
             document.getElementById('ahorro-esencial').innerText = 'Ahorras $989 MXN vs pago mensual';
             document.getElementById('ahorro-plus').innerText = 'Ahorras $1,389 MXN vs pago mensual';
             document.getElementById('ahorro-premium').innerText = 'Ahorras $1,889 MXN vs pago mensual';
+            
+            // Texto para Modalidad Anual
+            document.getElementById('estudio-esencial').innerHTML = '✅ <strong>12 estudios anuales</strong>';
+            document.getElementById('estudio-plus').innerHTML = '✅ Todo lo del Plan Esencial';
+            document.getElementById('estudio-premium').innerHTML = '✅ Todo lo del Plan Plus';
         } else {
             document.getElementById('precio-esencial').innerHTML = '$499 <span>/ mes</span>';
             document.getElementById('precio-plus').innerHTML = '$699 <span>/ mes</span>';
@@ -259,6 +284,11 @@
             document.getElementById('ahorro-esencial').innerText = 'Suscripción recurrente mensual';
             document.getElementById('ahorro-plus').innerText = 'Suscripción recurrente mensual';
             document.getElementById('ahorro-premium').innerText = 'Suscripción recurrente mensual';
+
+            // Texto para Modalidad Mensual
+            document.getElementById('estudio-esencial').innerHTML = '✅ <strong>1 estudio mensual acumulable</strong>';
+            document.getElementById('estudio-plus').innerHTML = '✅ Todo lo del Plan Esencial';
+            document.getElementById('estudio-premium').innerHTML = '✅ Todo lo del Plan Plus';
         }
     }
 
