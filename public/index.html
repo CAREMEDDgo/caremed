@@ -55,9 +55,9 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
-        .modal-content label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-top: 10px; }
-        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-content label { font-size: 12px; font-weight: bold; color: #444; display: block; margin-top: 8px; }
+        .modal-content input, .modal-content select { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
         .btn-confirm { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
         .btn-cancel { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
     </style>
@@ -168,26 +168,32 @@
 
 </div>
 
-<!-- Modal Suscripción -->
+<!-- Modal Suscripción / Registro de Usuario -->
 <div id="modal-suscripcion" class="modal">
     <div class="modal-content">
-        <h3>💳 Contratar Membresía CAREMED</h3>
-        <p id="modal-plan-info" style="font-size: 13px; color: #555; margin-bottom: 10px;"></p>
+        <h3>💳 Registro y Contratación CAREMED</h3>
+        <p id="modal-plan-info" style="font-size: 12px; color: #0056b3; font-weight: bold; margin-bottom: 5px;"></p>
         <form id="form-suscripcion">
             <label>Nombre Completo</label>
-            <input type="text" id="sub-nombre" required>
+            <input type="text" id="sub-nombre" placeholder="Ej. Juan Pérez" required>
+
+            <label>Correo Electrónico (Tu Usuario)</label>
+            <input type="email" id="sub-correo" placeholder="ejemplo@correo.com" required>
+
+            <label>Crea una Contraseña</label>
+            <input type="password" id="sub-pass" placeholder="******" required>
 
             <label>Teléfono (WhatsApp)</label>
-            <input type="tel" id="sub-telefono" required>
+            <input type="tel" id="sub-telefono" placeholder="618 123 4567" required>
 
-            <label>Sexo / Género (Para asignar calendario)</label>
+            <label>Sexo / Género (Para calendario médico)</label>
             <select id="sub-sexo">
                 <option value="Hombre">Hombre</option>
                 <option value="Mujer">Mujer</option>
             </select>
 
             <div class="modal-btns">
-                <button type="submit" class="btn-confirm">Confirmar y Crear Cuenta</button>
+                <button type="submit" class="btn-confirm">Crear Cuenta e Iniciar</button>
                 <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
             </div>
         </form>
@@ -226,16 +232,10 @@
             document.getElementById('precio-esencial').innerHTML = '$2,999 <span>/ año</span>';
             document.getElementById('precio-plus').innerHTML = '$4,199 <span>/ año</span>';
             document.getElementById('precio-premium').innerHTML = '$6,999 <span>/ año</span>';
-            document.getElementById('ahorro-esencial').innerText = 'Ahorras $589 vs pago mensual';
-            document.getElementById('ahorro-plus').innerText = 'Ahorras $829 vs pago mensual';
-            document.getElementById('ahorro-premium').innerText = 'Ahorras $1,389 vs pago mensual';
         } else {
             document.getElementById('precio-esencial').innerHTML = '$299 <span>/ mes</span>';
             document.getElementById('precio-plus').innerHTML = '$419 <span>/ mes</span>';
             document.getElementById('precio-premium').innerHTML = '$699 <span>/ mes</span>';
-            document.getElementById('ahorro-esencial').innerText = 'Suscripción recurrente mensual';
-            document.getElementById('ahorro-plus').innerText = 'Suscripción recurrente mensual';
-            document.getElementById('ahorro-premium').innerText = 'Suscripción recurrente mensual';
         }
     }
 
@@ -259,7 +259,7 @@
         if (plan === 'Premium') monto = modalidadActual === 'Anual' ? 6999 : 699;
 
         planSeleccionado = { plan, monto, modalidad: modalidadActual };
-        document.getElementById('modal-plan-info').innerText = `Plan: ${plan} (${modalidadActual}: $${monto} MXN)`;
+        document.getElementById('modal-plan-info').innerText = `Plan Seleccionado: ${plan} (${modalidadActual}: $${monto} MXN)`;
         document.getElementById('modal-suscripcion').style.display = 'flex';
     }
 
@@ -271,6 +271,8 @@
         e.preventDefault();
         const datos = {
             nombre: document.getElementById('sub-nombre').value,
+            correo: document.getElementById('sub-correo').value,
+            password: document.getElementById('sub-pass').value,
             telefono: document.getElementById('sub-telefono').value,
             sexo: document.getElementById('sub-sexo').value,
             plan: planSeleccionado.plan,
@@ -278,15 +280,19 @@
             monto: planSeleccionado.monto
         };
 
-        const res = await fetch('/api/membresias/suscripcion', {
+        const res = await fetch('/api/auth/registro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         });
         const json = await res.json();
         if (res.ok) {
-            alert('🎉 ¡Suscripción registrada con éxito!');
-            window.location.href = `/paciente-dashboard.html?usuario_id=${json.usuario.id}`;
+            alert(`🎉 ¡Cuenta creada con éxito, ${json.usuario.nombre}!\n\nIniciando sesión en tu panel de paciente...`);
+            // Guardar usuario en LocalStorage de la sesión
+            localStorage.setItem('caremed_user_id', json.usuario.id);
+            window.location.href = `/paciente-dashboard.html`;
+        } else {
+            alert(`⚠️ Error: ${json.error}`);
         }
     });
 
@@ -308,7 +314,7 @@
             });
             const json = await res.json();
             if (res.ok) {
-                alert(`✅ ¡Estudio Comprado!\n\nTu Código QR es: ${json.cita.codigo_qr}.\nPreséntalo en ${clinica} para realizar tu estudio.`);
+                alert(`✅ ¡Estudio Comprado!\n\nTu Código QR es: ${json.cita.codigo_qr}.`);
             }
         }
     }

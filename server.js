@@ -21,8 +21,10 @@ async function inicializarTablas() {
             CREATE TABLE IF NOT EXISTS usuarios_membresias (
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(150) NOT NULL,
+                correo VARCHAR(150) UNIQUE NOT NULL,
+                password VARCHAR(100) NOT NULL,
                 telefono VARCHAR(50) NOT NULL,
-                sexo VARCHAR(20) DEFAULT 'General',
+                sexo VARCHAR(20) DEFAULT 'Hombre',
                 plan VARCHAR(50) NOT NULL,
                 modalidad_pago VARCHAR(20) DEFAULT 'Anual',
                 monto NUMERIC(10, 2) NOT NULL,
@@ -56,41 +58,81 @@ async function inicializarTablas() {
             );
         `);
 
-        // Recargar el catálogo completo de Clínicas y Hospitales de Durango
-        await pool.query('DELETE FROM clinicas_convenio');
-        await pool.query(`
-            INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
-            -- Paquete Esencial (Económicas / Locales)
-            ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
-            ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
-            ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
-            ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
-            ('Laboratorio Clínico del Norte', 'Económico', 'Esencial', 'Blvd. Jose Maria Morelos, Durango', 24.0380, -104.6510, 15.00),
-            ('Laboratorio del Centro', 'Económico', 'Esencial', 'Calle Constitución #210, Centro', 24.0260, -104.6670, 15.00),
+        // Insertar clínicas base si la tabla está vacía
+        const checkClinicas = await pool.query('SELECT COUNT(*) FROM clinicas_convenio');
+        if (parseInt(checkClinicas.rows[0].count) === 0) {
+            await pool.query(`
+                INSERT INTO clinicas_convenio (nombre, categoria, plan_minimo, direccion, lat, lng, comision_porcentaje) VALUES
+                ('Laboratorio Gutiérrez', 'Económico', 'Esencial', 'Zona Centro, Durango', 24.0250, -104.6680, 15.00),
+                ('Laboratorio San José', 'Económico', 'Esencial', 'Col. Hidalgo, Durango', 24.0180, -104.6520, 15.00),
+                ('Laboratorio Clínico del Guadiana', 'Económico', 'Esencial', 'Calle Negrete #304, Centro', 24.0270, -104.6640, 15.00),
+                ('Laboratorio Analiza', 'Económico', 'Esencial', 'Av. Normal, Durango', 24.0290, -104.6610, 15.00),
+                ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
+                ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
+                ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
+                ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
+                ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
+                ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00);
+            `);
+        }
 
-            -- Paquete Plus (Nivel Medio / Cadenas)
-            ('Salud Digna Durango', 'Medio', 'Plus', 'Av. 20 de Noviembre #801, Centro', 24.0265, -104.6650, 12.00),
-            ('Laboratorios Chopo', 'Medio', 'Plus', 'Blvd. Dolores del Río, Durango', 24.0220, -104.6580, 12.00),
-            ('Laboratorio Juárez', 'Medio', 'Plus', 'Av. Juárez #405, Centro', 24.0240, -104.6620, 12.00),
-            ('Laboratorio del Lago', 'Medio', 'Plus', 'Fracc. Los Remedios, Durango', 24.0350, -104.6490, 12.00),
-            ('Laboratorio Biomédico Durango', 'Medio', 'Plus', 'Av. Felipe Pescador, Durango', 24.0310, -104.6590, 12.00),
-            ('Laboratorio San Jorge', 'Medio', 'Plus', 'Av. Universidad #102, Durango', 24.0330, -104.6450, 12.00),
-
-            -- Paquete Premium (Hospitales Privados)
-            ('Hospital San Jorge', 'Hospital', 'Premium', 'Av. Hidalgo #412, Centro', 24.0285, -104.6630, 10.00),
-            ('Hospital del Parque', 'Hospital', 'Premium', 'Calle del Parque #115, Durango', 24.0150, -104.6700, 10.00),
-            ('Hospital La Paz', 'Hospital', 'Premium', 'Blvd. Francisco Villa #101, Durango', 24.0410, -104.6320, 10.00),
-            ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
-        `);
-
-        console.log("🏥 Red completa de Clínicas y Hospitales de Durango sincronizada.");
+        console.log("⚡ Base de datos inicializada con autenticación y cuentas de usuario.");
     } catch (err) {
         console.error("Error al inicializar tablas:", err);
     }
 }
 inicializarTablas();
 
-/* ==================== API ENDPOINTS ==================== */
+/* ==================== RUTAS DE AUTENTICACIÓN ==================== */
+
+// 1. Registro de Nuevo Usuario con Membresía
+app.post('/api/auth/registro', async (req, res) => {
+    const { nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto } = req.body;
+    try {
+        // Verificar si el correo ya existe
+        const existe = await pool.query('SELECT * FROM usuarios_membresias WHERE correo = $1', [correo]);
+        if (existe.rows.length > 0) {
+            return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO usuarios_membresias (nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [nombre, correo, password, telefono, sexo, plan, modalidad_pago, monto]
+        );
+
+        res.json({ exito: true, usuario: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 2. Inicio de Sesión
+app.post('/api/auth/login', async (req, res) => {
+    const { correo, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM usuarios_membresias WHERE correo = $1 AND password = $2', [correo, password]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+        }
+        res.json({ exito: true, usuario: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. Obtener Datos del Perfil Actual
+app.get('/api/usuarios/:id', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM usuarios_membresias WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/* ==================== OTROS ENDPOINTS ==================== */
 
 app.get('/api/clinicas', async (req, res) => {
     const { plan } = req.query;
@@ -100,19 +142,6 @@ app.get('/api/clinicas', async (req, res) => {
         if (plan === 'Plus') query += " WHERE plan_minimo IN ('Esencial', 'Plus')";
         const result = await pool.query(query);
         res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/membresias/suscripcion', async (req, res) => {
-    const { nombre, telefono, sexo, plan, modalidad_pago, monto } = req.body;
-    try {
-        const result = await pool.query(
-            'INSERT INTO usuarios_membresias (nombre, telefono, sexo, plan, modalidad_pago, monto) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [nombre, telefono, sexo, plan, modalidad_pago, monto]
-        );
-        res.json({ exito: true, usuario: result.rows[0] });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -140,23 +169,19 @@ app.post('/api/citas/agendar', async (req, res) => {
     }
 });
 
-// Modificar fecha de una Cita
 app.put('/api/citas/:id/fecha', async (req, res) => {
-    const { nueva_fecha } = req.body;
     try {
-        await pool.query('UPDATE citas_estudios SET fecha_cita = $1 WHERE id = $2', [nueva_fecha, req.params.id]);
+        await pool.query('UPDATE citas_estudios SET fecha_cita = $1 WHERE id = $2', [req.body.nueva_fecha, req.params.id]);
         res.json({ exito: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Cancelar / Eliminar Cita por Error
 app.delete('/api/citas/:id', async (req, res) => {
     try {
         const cita = await pool.query('SELECT * FROM citas_estudios WHERE id = $1', [req.params.id]);
         if (cita.rows.length > 0 && cita.rows[0].usuario_id && cita.rows[0].tipo_compra === 'Membresia') {
-            // Reembolsar 1 estudio al usuario si era cita de membresía
             await pool.query('UPDATE usuarios_membresias SET estudios_restantes = estudios_restantes + 1 WHERE id = $1', [cita.rows[0].usuario_id]);
         }
         await pool.query('DELETE FROM citas_estudios WHERE id = $1', [req.params.id]);
@@ -180,19 +205,11 @@ app.get('/api/admin/resumen', async (req, res) => {
         const suscriptores = await pool.query('SELECT * FROM usuarios_membresias ORDER BY id DESC');
         const citas = await pool.query('SELECT * FROM citas_estudios ORDER BY id DESC');
         const comisionesPorClinica = await pool.query(`
-            SELECT clinica, 
-                   COUNT(*) as total_pacientes, 
-                   SUM(comision_generada) as total_comision_a_cobrar
-            FROM citas_estudios 
-            GROUP BY clinica
-            ORDER BY total_comision_a_cobrar DESC
+            SELECT clinica, COUNT(*) as total_pacientes, SUM(comision_generada) as total_comision_a_cobrar
+            FROM citas_estudios GROUP BY clinica ORDER BY total_comision_a_cobrar DESC
         `);
 
-        res.json({ 
-            suscriptores: suscriptores.rows, 
-            citas: citas.rows,
-            comisiones: comisionesPorClinica.rows
-        });
+        res.json({ suscriptores: suscriptores.rows, citas: citas.rows, comisiones: comisionesPorClinica.rows });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -208,4 +225,4 @@ app.delete('/api/admin/suscripcion/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor CAREMED en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor ejecutándose en el puerto ${PORT}`));

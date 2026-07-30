@@ -11,10 +11,20 @@
         
         header { background: #ffffff; color: #0056b3; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
         .logo-img { height: 42px; object-fit: contain; }
-        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         nav a { color: #0056b3; text-decoration: none; padding: 8px 14px; border-radius: 6px; background: #eef5ff; font-size: 13px; font-weight: bold; transition: 0.2s; }
         nav a:hover, nav a.active { background: #0056b3; color: white; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
+        /* Login Screen */
+        .login-box { max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); text-align: center; }
+        .login-box h2 { color: #0056b3; margin-bottom: 8px; }
+        .login-box p { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .login-box label { font-size: 12px; font-weight: bold; text-align: left; display: block; margin-top: 10px; color: #444; }
+        .login-box input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .btn-login { background: #0056b3; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+
+        /* Dashboard Screen */
         .container { max-width: 1100px; margin: 25px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 
@@ -26,12 +36,12 @@
         .panel-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .panel-box h3 { color: #0056b3; margin-bottom: 15px; font-size: 18px; }
 
-        #map { height: 280px; width: 100%; border-radius: 10px; margin-top: 10px; }
+        #map { height: 260px; width: 100%; border-radius: 10px; margin-top: 10px; }
 
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #555; }
         .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .btn-schedule { background: #28a745; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-schedule { background: #28a745; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 13px; }
@@ -51,10 +61,29 @@
         <a href="/">💳 Membresías y Tienda</a>
         <a href="/paciente-dashboard.html" class="active">🩺 Mi Panel y Citas</a>
         <a href="/admin.html">🛡️ Administración B2B</a>
+        <button id="btn-cerrar-sesion" class="btn-logout" style="display:none;" onclick="cerrarSesion()">🔒 Cerrar Sesión</button>
     </nav>
 </header>
 
-<div class="container">
+<!-- PANTALLA 1: LOGIN SI NO HAY SESIÓN -->
+<div id="vista-login" class="login-box">
+    <h2>🔑 Iniciar Sesión</h2>
+    <p>Ingresa a tu cuenta de paciente CAREMED para consultar tu saldo de estudios y agendar citas.</p>
+    
+    <form id="form-login">
+        <label>Correo Electrónico</label>
+        <input type="email" id="login-correo" placeholder="ejemplo@correo.com" required>
+
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="******" required>
+
+        <button type="submit" class="btn-login">Ingresar a Mi Panel</button>
+    </form>
+    <p style="margin-top: 15px; font-size: 12px;">¿Aún no tienes membresía? <a href="/" style="color:#0056b3; font-weight:bold;">Contrátala aquí</a></p>
+</div>
+
+<!-- PANTALLA 2: DASHBOARD PRIVADO DEL PACIENTE -->
+<div id="vista-dashboard" class="container" style="display: none;">
     <div>
         <div class="card-digital">
             <span class="card-plan" id="usr-plan">Plan Esencial</span>
@@ -134,20 +163,68 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const usuarioId = urlParams.get('usuario_id') || 1;
-
+    let usuarioActualId = localStorage.getItem('caremed_user_id');
     let nombreUsuario = '';
-    const map = L.map('map').setView([24.0277, -104.6532], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    let map = null;
 
-    async function cargarDatosPerfil() {
+    // Verificar si hay sesión activa al cargar
+    if (usuarioActualId) {
+        mostrarDashboard();
+    } else {
+        document.getElementById('vista-login').style.display = 'block';
+        document.getElementById('vista-dashboard').style.display = 'none';
+    }
+
+    // Formulario de Login
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const correo = document.getElementById('login-correo').value;
+        const password = document.getElementById('login-pass').value;
+
         try {
-            const res = await fetch('/api/admin/resumen');
-            const data = await res.json();
-            const usuario = data.suscriptores.find(u => u.id == usuarioId) || data.suscriptores[0];
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo, password })
+            });
 
-            if (usuario) {
+            const json = await res.json();
+            if (res.ok && json.exito) {
+                localStorage.setItem('caremed_user_id', json.usuario.id);
+                usuarioActualId = json.usuario.id;
+                mostrarDashboard();
+            } else {
+                alert(`⚠️ ${json.error}`);
+            }
+        } catch (err) {
+            alert('⚠️ Error de conexión al servidor.');
+        }
+    });
+
+    function mostrarDashboard() {
+        document.getElementById('vista-login').style.display = 'none';
+        document.getElementById('vista-dashboard').style.display = 'grid';
+        document.getElementById('btn-cerrar-sesion').style.display = 'inline-block';
+
+        if (!map) {
+            map = L.map('map').setView([24.0277, -104.6532], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        }
+
+        cargarPerfilUsuario();
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('caremed_user_id');
+        window.location.reload();
+    }
+
+    async function cargarPerfilUsuario() {
+        try {
+            const res = await fetch(`/api/usuarios/${usuarioActualId}`);
+            const usuario = await res.json();
+
+            if (usuario && !usuario.error) {
                 nombreUsuario = usuario.nombre;
                 document.getElementById('usr-nombre').innerText = usuario.nombre;
                 document.getElementById('usr-plan').innerText = `Plan ${usuario.plan}`;
@@ -183,7 +260,7 @@
     async function cargarCitasAgendadas() {
         const tbody = document.getElementById('tabla-citas');
         try {
-            const res = await fetch(`/api/citas/usuario/${usuarioId}`);
+            const res = await fetch(`/api/citas/usuario/${usuarioActualId}`);
             const citas = await res.json();
 
             if (!citas || citas.length === 0) {
@@ -227,24 +304,22 @@
     }
 
     async function cancelarCita(idCita) {
-        if (confirm("¿Deseas cancelar esta cita agendada por error?\n\nSe reembolsará tu saldo de estudio si corresponde.")) {
+        if (confirm("¿Deseas cancelar esta cita agendada por error?")) {
             const res = await fetch(`/api/citas/${idCita}`, { method: 'DELETE' });
             if (res.ok) {
-                alert("✅ Cita cancelada con éxito.");
-                cargarDatosPerfil();
+                alert("✅ Cita cancelada.");
+                cargarPerfilUsuario();
             }
         }
     }
 
     document.getElementById('form-agendar').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const estudioCompleto = document.getElementById('select-estudio').value;
-
         const citaData = {
-            usuario_id: usuarioId,
+            usuario_id: usuarioActualId,
             paciente: nombreUsuario,
             tipo_compra: 'Membresia',
-            estudio: estudioCompleto,
+            estudio: document.getElementById('select-estudio').value,
             clinica: document.getElementById('select-clinica').value,
             fecha_cita: document.getElementById('fecha-cita').value
         };
@@ -258,15 +333,13 @@
         const json = await res.json();
         if (res.ok && json.exito) {
             alert(`🎉 ¡Cita agendada correctamente!\n\nTu Código QR es: ${json.cita.codigo_qr}`);
-            cargarDatosPerfil();
+            cargarPerfilUsuario();
         }
     });
 
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
     document.getElementById('fecha-cita').value = manana.toISOString().split('T')[0];
-
-    cargarDatosPerfil();
 </script>
 
 </body>
