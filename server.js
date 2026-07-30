@@ -70,10 +70,15 @@ async function inicializarEstructura() {
             );
         `);
 
-        // AGREGAR COLUMNAS FALTANTES A TABLAS EXISTENTES SI NO EXISTEN
+        // ALTERAR TABLA CITAS_ESTUDIOS PARA REPARAR LA COLUMNA mes_programado Y FALTANTES
         await pool.query(`
             DO $$ 
             BEGIN 
+                -- Quitar restriccion NOT NULL o borrar columna obsoleta mes_programado si existe
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='mes_programado') THEN
+                    ALTER TABLE citas_estudios ALTER COLUMN mes_programado DROP NOT NULL;
+                END IF;
+
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='citas_estudios' AND column_name='tipo_compra') THEN
                     ALTER TABLE citas_estudios ADD COLUMN tipo_compra VARCHAR(50) DEFAULT 'Membresia';
                 END IF;
@@ -109,7 +114,7 @@ async function inicializarEstructura() {
             ('Hospital Santa Bárbara', 'Hospital', 'Premium', 'Calle 5 de Febrero, Durango', 24.0245, -104.6690, 10.00);
         `);
 
-        console.log("⚡ Base de datos PostgreSQL inicializada con columnas de citas corregidas.");
+        console.log("⚡ Base de datos PostgreSQL reconfigurada (desactivado NOT NULL de mes_programado).");
     } catch (err) {
         console.error("Error al inicializar PostgreSQL:", err);
     }
