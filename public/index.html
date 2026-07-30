@@ -141,9 +141,10 @@
         <div class="schedule-grid" id="grid-estudios"></div>
     </div>
 
+    <!-- Estudios Individuales A la Carta -->
     <div class="single-section">
         <h2 style="text-align: center; color: #0056b3;">🛒 Comprar Estudios Individuales (A la carta)</h2>
-        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Si solo necesitas un estudio específico, cómpralo desde la app con descuento preferencial:</p>
+        <p style="text-align: center; font-size: 13px; color: #666; margin-top: 5px;">Si solo necesitas un estudio específico, cómpralo con precio preferencial y consúltalo en tu panel:</p>
         
         <table class="table-single">
             <thead>
@@ -155,20 +156,20 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Biometría Hemática</td><td>$250</td><td><strong>$230 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Biometría Hemática', 230)">Comprar Ahora</button></td></tr>
-                <tr><td>Química Sanguínea</td><td>$380</td><td><strong>$350 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Química Sanguínea', 350)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil de Lípidos</td><td>$420</td><td><strong>$390 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Perfil de Lípidos', 390)">Comprar Ahora</button></td></tr>
-                <tr><td>Perfil Tiroideo</td><td>$700</td><td><strong>$650 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Perfil Tiroideo', 650)">Comprar Ahora</button></td></tr>
-                <tr><td>Antígeno Prostático (PSA - Hombre)</td><td>$600</td><td><strong>$560 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Antígeno Prostático (PSA)', 560)">Comprar Ahora</button></td></tr>
-                <tr><td>Papanicolaou (Mujer)</td><td>$550</td><td><strong>$520 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Papanicolaou', 520)">Comprar Ahora</button></td></tr>
-                <tr><td>Mastografía (Mujer)</td><td>$1,000</td><td><strong>$930 MXN</strong></td><td><button class="btn-buy-single" onclick="comprarEstudioIndividual('Mastografía', 930)">Comprar Ahora</button></td></tr>
+                <tr><td>Biometría Hemática</td><td>$250</td><td><strong>$230 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Biometría Hemática', 230)">Comprar Ahora</button></td></tr>
+                <tr><td>Química Sanguínea</td><td>$380</td><td><strong>$350 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Química Sanguínea', 350)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil de Lípidos</td><td>$420</td><td><strong>$390 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil de Lípidos', 390)">Comprar Ahora</button></td></tr>
+                <tr><td>Perfil Tiroideo</td><td>$700</td><td><strong>$650 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Perfil Tiroideo', 650)">Comprar Ahora</button></td></tr>
+                <tr><td>Antígeno Prostático (PSA - Hombre)</td><td>$600</td><td><strong>$560 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Antígeno Prostático (PSA)', 560)">Comprar Ahora</button></td></tr>
+                <tr><td>Papanicolaou (Mujer)</td><td>$550</td><td><strong>$520 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Papanicolaou', 520)">Comprar Ahora</button></td></tr>
+                <tr><td>Mastografía (Mujer)</td><td>$1,000</td><td><strong>$930 MXN</strong></td><td><button class="btn-buy-single" onclick="iniciarCompraIndividual('Mastografía', 930)">Comprar Ahora</button></td></tr>
             </tbody>
         </table>
     </div>
 
 </div>
 
-<!-- Modal Suscripción / Registro de Usuario -->
+<!-- Modal Registro/Contratación Membresía -->
 <div id="modal-suscripcion" class="modal">
     <div class="modal-content">
         <h3>💳 Registro y Contratación CAREMED</h3>
@@ -194,7 +195,50 @@
 
             <div class="modal-btns">
                 <button type="submit" class="btn-confirm">Crear Cuenta e Iniciar</button>
-                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal('modal-suscripcion')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Compra Estudio Individual -->
+<div id="modal-individual" class="modal">
+    <div class="modal-content">
+        <h3>🛒 Comprar Estudio Individual</h3>
+        <p id="modal-single-info" style="font-size: 13px; color: #28a745; font-weight: bold; margin-bottom: 5px;"></p>
+        <form id="form-individual">
+            <label>Selecciona Clínica / Laboratorio</label>
+            <select id="single-clinica" required>
+                <option value="Salud Digna Durango">Salud Digna Durango</option>
+                <option value="Laboratorios Chopo">Laboratorios Chopo</option>
+                <option value="Laboratorio Del Guadiana">Laboratorio Del Guadiana</option>
+                <option value="Laboratorio Juárez">Laboratorio Juárez</option>
+                <option value="Hospital San Jorge">Hospital San Jorge</option>
+            </select>
+
+            <label>Fecha de la Cita</label>
+            <input type="date" id="single-fecha" required>
+
+            <div id="bloque-datos-nuevo-usr">
+                <hr style="margin: 12px 0; border: 0; border-top: 1px solid #eee;">
+                <p style="font-size: 11px; color: #666;">Crea tu cuenta para guardar esta cita y tu código QR:</p>
+
+                <label>Nombre Completo</label>
+                <input type="text" id="single-nombre" placeholder="Ej. María Gómez">
+
+                <label>Correo Electrónico</label>
+                <input type="email" id="single-correo" placeholder="correo@ejemplo.com">
+
+                <label>Contraseña</label>
+                <input type="password" id="single-pass" placeholder="******">
+
+                <label>Teléfono</label>
+                <input type="tel" id="single-telefono" placeholder="618 123 4567">
+            </div>
+
+            <div class="modal-btns">
+                <button type="submit" class="btn-confirm">Pagar y Agendar Cita</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal('modal-individual')">Cancelar</button>
             </div>
         </form>
     </div>
@@ -204,6 +248,7 @@
     let modalidadActual = 'Anual';
     let generoActual = 'Hombre';
     let planSeleccionado = {};
+    let estudioSeleccionado = {};
 
     const programaHombre = [
         { mes: 'Enero', estudio: 'Biometría Hemática' }, { mes: 'Febrero', estudio: 'Química Sanguínea' },
@@ -263,10 +308,30 @@
         document.getElementById('modal-suscripcion').style.display = 'flex';
     }
 
-    function cerrarModal() {
-        document.getElementById('modal-suscripcion').style.display = 'none';
+    function iniciarCompraIndividual(nombreEstudio, precio) {
+        estudioSeleccionado = { nombre: nombreEstudio, precio };
+        document.getElementById('modal-single-info').innerText = `${nombreEstudio} - $${precio} MXN`;
+        
+        // Si ya hay sesión iniciada, ocultamos los campos de crear cuenta
+        const userId = localStorage.getItem('caremed_user_id');
+        if (userId) {
+            document.getElementById('bloque-datos-nuevo-usr').style.display = 'none';
+        } else {
+            document.getElementById('bloque-datos-nuevo-usr').style.display = 'block';
+        }
+
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        document.getElementById('single-fecha').value = manana.toISOString().split('T')[0];
+
+        document.getElementById('modal-individual').style.display = 'flex';
     }
 
+    function cerrarModal(idModal) {
+        document.getElementById(idModal).style.display = 'none';
+    }
+
+    // Registro Suscripción
     document.getElementById('form-suscripcion').addEventListener('submit', async (e) => {
         e.preventDefault();
         const datos = {
@@ -287,8 +352,7 @@
         });
         const json = await res.json();
         if (res.ok) {
-            alert(`🎉 ¡Cuenta creada con éxito, ${json.usuario.nombre}!\n\nIniciando sesión en tu panel de paciente...`);
-            // Guardar usuario en LocalStorage de la sesión
+            alert(`🎉 ¡Cuenta creada con éxito!\n\nRedirigiendo a tu panel...`);
             localStorage.setItem('caremed_user_id', json.usuario.id);
             window.location.href = `/paciente-dashboard.html`;
         } else {
@@ -296,28 +360,65 @@
         }
     });
 
-    async function comprarEstudioIndividual(estudio, precio) {
-        const paciente = prompt(`Estudio: ${estudio}\nPrecio App: $${precio} MXN\n\nIngresa tu Nombre Completo para generar la orden:`);
-        if (paciente) {
-            const clinica = prompt(`Selecciona Clínica o Laboratorio:`, "Salud Digna Durango");
-            const res = await fetch('/api/citas/agendar', {
+    // Formulario Compra Individual
+    document.getElementById('form-individual').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let userId = localStorage.getItem('caremed_user_id');
+        let nombrePaciente = '';
+
+        // Si NO hay usuario iniciado, lo registramos primero
+        if (!userId) {
+            const datosReg = {
+                nombre: document.getElementById('single-nombre').value,
+                correo: document.getElementById('single-correo').value,
+                password: document.getElementById('single-pass').value,
+                telefono: document.getElementById('single-telefono').value,
+                sexo: 'General',
+                plan: 'Sin Membresia (Individual)',
+                modalidad_pago: 'Única',
+                monto: 0
+            };
+
+            const resReg = await fetch('/api/auth/registro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    paciente,
-                    tipo_compra: 'Individual',
-                    estudio,
-                    monto_pagado: precio,
-                    clinica: clinica || 'Salud Digna Durango',
-                    fecha_cita: new Date().toISOString().split('T')[0]
-                })
+                body: JSON.stringify(datosReg)
             });
-            const json = await res.json();
-            if (res.ok) {
-                alert(`✅ ¡Estudio Comprado!\n\nTu Código QR es: ${json.cita.codigo_qr}.`);
+            const jsonReg = await resReg.json();
+
+            if (!resReg.ok) {
+                alert(`⚠️ Error al crear cuenta: ${jsonReg.error}`);
+                return;
             }
+
+            userId = jsonReg.usuario.id;
+            nombrePaciente = jsonReg.usuario.nombre;
+            localStorage.setItem('caremed_user_id', userId);
         }
-    }
+
+        // Agendar cita individual ligada al usuario
+        const citaData = {
+            usuario_id: userId,
+            paciente: nombrePaciente || 'Cliente Registrado',
+            tipo_compra: 'Individual',
+            estudio: estudioSeleccionado.nombre,
+            monto_pagado: estudioSeleccionado.precio,
+            clinica: document.getElementById('single-clinica').value,
+            fecha_cita: document.getElementById('single-fecha').value
+        };
+
+        const resCita = await fetch('/api/citas/agendar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(citaData)
+        });
+        const jsonCita = await resCita.json();
+
+        if (resCita.ok) {
+            alert(`🎉 ¡Compra exitosa!\n\nTu estudio "${estudioSeleccionado.nombre}" fue agendado con el código QR: ${jsonCita.cita.codigo_qr}.\nRedirigiendo a tu panel para ver tu cita...`);
+            window.location.href = `/paciente-dashboard.html`;
+        }
+    });
 
     cambiarGenero('Hombre');
 </script>
